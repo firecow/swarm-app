@@ -11,7 +11,7 @@ jobs:
 
   tsc:
     runs-on: ubuntu-latest
-    strategy: &strategy
+    strategy:
       matrix:
         node-version: [18.x, 20.x]
     steps:
@@ -25,7 +25,9 @@ jobs:
 
   eslint:
     runs-on: ubuntu-latest
-    strategy: *strategy
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -37,7 +39,9 @@ jobs:
 
 #  jest:
 #    runs-on: ubuntu-latest
-#    strategy: *strategy
+#    strategy:
+#      matrix:
+#        node-version: [18.x, 20.x]
 #    steps:
 #      - uses: actions/checkout@v3
 #      - uses: actions/setup-node@v3

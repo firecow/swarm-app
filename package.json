@@ -1,9 +1,11 @@
 {
-  "name": "ratnation",
+  "name": "cow_swarm",
+  "main": "src/index.js",
+  "bin": "src/index.js",
   "scripts": {
     "build": "tsc",
     "fix": "eslint . --fix && tsc",
-    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --coverage"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "chalk-template": "0.5.0",
@@ -80,9 +82,9 @@
     }
   },
   "jest": {
-    "preset": "ts-jest/presets/default-esm",
+    "preset": "ts-jest",
     "testMatch": [
-      "**/tests/**/*.test.ts"
+      "**/*.test.ts"
     ],
     "coverageReporters": [
       "text-summary",
@@ -90,10 +92,28 @@
       "lcov"
     ],
     "collectCoverageFrom": [
-      "!src/index.mjs",
-      "**/*.mjs",
+      "**/*.js",
+      "!src/index.js",
       "!**/node_modules/**",
       "!**/coverage/**"
     ]
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/firecow/cow_swarm.git"
+  },
+  "author": "Mads Jon Nielsen <madsjon@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/firecow/cow_swarm/issues"
+  },
+  "homepage": "https://github.com/firecow/cow_swarm#readme",
+  "keywords": [
+    "docker",
+    "stack",
+    "diff",
+    "deploy",
+    "wait",
+    "swarm"
+  ]
 }
