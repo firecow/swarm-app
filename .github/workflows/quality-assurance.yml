@@ -1,0 +1,49 @@
+---
+name: Quality Assurance
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+
+  tsc:
+    runs-on: ubuntu-latest
+    strategy: &strategy
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci --no-audit
+      - run: npx tsc
+
+  eslint:
+    runs-on: ubuntu-latest
+    strategy: *strategy
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci --no-audit
+      - run: npx eslint .
+
+#  jest:
+#    runs-on: ubuntu-latest
+#    strategy: *strategy
+#    steps:
+#      - uses: actions/checkout@v3
+#      - uses: actions/setup-node@v3
+#        with:
+#          node-version: ${{ matrix.node-version }}
+#          cache: 'npm'
+#      - run: npm ci --no-audit
+#      - run: npm run build
+#      - run: npm test
