@@ -6,13 +6,13 @@ All in one docker stack diff, deploy and wait, plus various improvements
 
 ## Certain things are hard to redeploy 
 
-`--rename-configs` and `--rename-secrets` to the rescue
+Redeploy swarm config's can be hard. `--config-content-checksum-rewrite` to the rescue
 
-Changing from `replicated` to `global` and vice versa is handled
+Going from `replicated` to `global` and vice versa, no problem
 
-`network.alias` bugs are taken care of
+Experiencing `network.alias` bugs, we got you covered
 
-## What will happen, when i deploy
+## What will happen?
 `cow_swarm diff` gives a proper overview
 
 ## Was deployment succesful?
