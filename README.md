@@ -26,7 +26,7 @@ services:
     extends: { file: https://cow-swarm.firecow.dk/1.0.0/services.yml, service: nginx }
 ```
 
-## Inline config/secret content
+## Inline configs content
 
 ```yml
 configs:
