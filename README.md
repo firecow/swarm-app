@@ -6,7 +6,7 @@ All in one docker stack diff, deploy and wait, plus various improvements
 
 ## Certain things are hard to redeploy 
 
-Redeploy swarm config's can be hard. `--config-content-checksum-rewrite` to the rescue
+Updating swarm config's can be a pain. `--config-content-checksum-rewrite` to the rescue
 
 Going from `replicated` to `global` and vice versa, no problem
 
