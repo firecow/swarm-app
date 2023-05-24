@@ -4,7 +4,6 @@ All in one docker stack diff, deploy and wait, plus various improvements
 
 ## Why?
 
----
 ### Certain things are hard to redeploy 
 
 `--rename-configs` and `--rename-secrets` to the rescue
