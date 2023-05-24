@@ -1,6 +1,6 @@
 import "source-map-support/register.js";
 import yargs from "yargs";
-import chalk from "chalk-template";
+import chalk from "chalk";
 import assert from "assert";
 
 process.on("uncaughtException", (err) => {
