@@ -22,6 +22,7 @@ jobs:
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
       - run: npx tsc
+      - run: node src/index.js --help
 
   eslint:
     runs-on: ubuntu-latest
