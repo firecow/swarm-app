@@ -8,7 +8,7 @@
     "test": "jest --coverage"
   },
   "dependencies": {
-    "chalk": "4.x",
+    "chalk": "5.x",
     "source-map-support": "0.5.x",
     "yargs": "17.x"
   },
