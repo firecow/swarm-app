@@ -2,21 +2,17 @@ import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
 import {loadCowSwarmConfig} from "./cow-swarm-config.js";
 
-export const command = "deploy <name>";
-export const description = "Deploys config to swarm cluster";
+export const command = "validate";
+export const description = "Validates config fileby json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFile = args["configFile"];
     assert(typeof configFile === "string");
     await loadCowSwarmConfig(configFile);
-    console.log("I still need some work");
+    console.log("Configuration file is valid");
 }
 
 export function builder (yargs: Argv) {
-    yargs.positional("name", {
-        type: "string",
-        description: "Stack name",
-    });
     yargs.option("config-file", {
         type: "string",
         description: "Config file",

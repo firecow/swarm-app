@@ -3,6 +3,7 @@ import yargs from "yargs";
 import assert from "assert";
 import * as diffCommand from "./diff-cmd.js";
 import * as deployCommand from "./deploy-cmd.js";
+import * as validateCommand from "./validate-cmd.js";
 
 process.on("uncaughtException", (err) => {
     if (err instanceof assert.AssertionError) {
@@ -18,6 +19,7 @@ void yargs(process.argv.slice(2))
     .parserConfiguration({"greedy-arrays": false})
     .usage("Find more information at https://github.com/firecow/cow_swarm")
     .env("COW_SWARM")
+    .command(validateCommand)
     .command(diffCommand)
     .command(deployCommand)
     .demandCommand()

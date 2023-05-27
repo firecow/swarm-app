@@ -16,13 +16,13 @@ Experiencing `network.alias` bugs, we got you covered.
 ## Was deployment succesful?
 `cow_swarm wait` gives a detailed answer.
 
-## Why so much yaml?
+## Having dublicated yaml across multiple project?
 Extends from external source is here to help.
 ```yml
 services:
   mywebserver:
     extends: 
-      - { file: https://cow-swarm.firecow.dk/1.0.0/services.yml, service: nginx }
+      - { file: https://cow-swarm.firecow.dk/1.0.0/general.yml, service: nginx }
 ```
 
 ## Do I really need external config files?
@@ -42,6 +42,9 @@ services:
 ```
 
 ## Getting confused looking at the yaml?
-cow_swarm.yml is 100% explicit, no more optionals, no more short syntax.
+`cow_swarm.yml` is 100% explicit, no more optionals, no more short syntax.
 
-cow_swarm config isn't docker-compose or docker stack, but it does borrow the good parts.
+cow_swarm config isn't docker-compose or docker stack, but it does borrows the good parts.
+
+## Getting deployment errors tools could have found?
+`cow_swarm validate` will exit 1 on every little mistake you make.
