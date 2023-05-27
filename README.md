@@ -5,7 +5,7 @@ Cow Swarm deploys services to docker swarm in a controlled manner.
 
 ## Certain things are hard to redeploy 
 
-Updating swarm config's can be a pain. `--config-content-checksum-rewrite` to the rescue.
+Updating swarm config's used to be a pain, but not anymore.
 
 Going from `replicated` to `global` and vice versa, no problem.
 
@@ -17,7 +17,7 @@ Experiencing `network.alias` bugs, we got you covered.
 ## Was deployment succesful?
 `cow_swarm wait` gives a detailed answer.
 
-## Having dublicated yaml across multiple project?
+## Duplicated yaml across multiple project?
 Extends from external source is here to help.
 ```yml
 services:
@@ -27,7 +27,8 @@ services:
 ```
 
 ## Do I really need external config files?
-Nope, you can just inline them, and they even get envsubst'ed. Escape with double dollar.
+Nope, you can just inline them and they even get envsubst'ed.
+Escape with double dollar.
 ```sh
 export NGINX_FOLDER=html
 ```
@@ -43,9 +44,9 @@ services:
 ```
 
 ## Confused looking at the yaml?
-`cow_swarm.yml` is 100% explicit, no more optionals, no more short syntax.
+`cow_swarm.yml` is very explicit, no more optionals, no more short syntax.
 
-cow_swarm config isn't docker-compose or docker stack, but it does borrows the good parts.
+cow_swarm config isn't docker-compose or docker stack, but it does borrow the good parts.
 
 ## Getting deployment errors tools could have found?
-`cow_swarm validate` will exit 1 on every little mistake you make.
+`cow_swarm validate` will exit with erros on every configuration mistake.
