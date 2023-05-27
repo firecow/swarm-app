@@ -1,4 +1,5 @@
-Deploy services to docker swarm in a controlled manner.
+# What?
+Cow Swarm deploys services to docker swarm in a controlled manner.
 
 # Why?
 
