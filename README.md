@@ -1,38 +1,47 @@
-# cow_swarm
-
-All in one docker stack diff, deploy and wait, plus various improvements
+Deploy services to docker swarm in a controlled manner.
 
 # Why?
 
 ## Certain things are hard to redeploy 
 
-Updating swarm config's can be a pain. `--config-content-checksum-rewrite` to the rescue
+Updating swarm config's can be a pain. `--config-content-checksum-rewrite` to the rescue.
 
-Going from `replicated` to `global` and vice versa, no problem
+Going from `replicated` to `global` and vice versa, no problem.
 
-Experiencing `network.alias` bugs, we got you covered
+Experiencing `network.alias` bugs, we got you covered.
 
 ## What will happen?
-`cow_swarm diff` gives a proper overview
+`cow_swarm diff` gives a proper overview.
 
 ## Was deployment succesful?
-`cow_swarm wait` gives a detailed answer
+`cow_swarm wait` gives a detailed answer.
 
-## Extending services from remote
-
+## Why so much yaml?
+Extends from external source is here to help.
 ```yml
 services:
   mywebserver:
-    extends: { file: https://cow-swarm.firecow.dk/1.0.0/services.yml, service: nginx }
+    extends: 
+      - { file: https://cow-swarm.firecow.dk/1.0.0/services.yml, service: nginx }
 ```
 
-## Inline configs content
+## Do I really need external config files?
+Nope, you can just inline them, and they get envsubst'ed. Escape with double dollar.
+```sh
+export NGINX_FOLDER=html
+```
 
 ```yml
-configs:
-  nginxcnf:
-    content: |
-      location / {
-        root html;
-      }
+services:
+  nginx:
+    configs:
+      nginx-conf: |
+        location / {
+          root ${NGINX_FOLDER};
+        }
 ```
+
+## Getting confused looking at the yaml?
+cow_swarm.yml is 100% explicit, no more optionals, no more short syntax.
+
+cow_swarm config isn't docker-compose or docker stack, but it does borrow the good parts.

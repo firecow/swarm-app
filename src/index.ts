@@ -1,13 +1,14 @@
 import "source-map-support/register.js";
 import yargs from "yargs";
-import chalk from "chalk";
 import assert from "assert";
+import * as diffCommand from "./diff-cmd.js";
+import * as deployCommand from "./deploy-cmd.js";
 
 process.on("uncaughtException", (err) => {
     if (err instanceof assert.AssertionError) {
-        console.error(chalk`{red ${err.message}}`);
+        console.error(`\x1b[31m${err.message}\x1b[0m`);
     } else {
-        console.error(err.message, err.stack?.split("\n").slice(0, 4).join("\n"));
+        console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 4).join("\n")}\x1b[0m`);
     }
     process.exit(1);
 });
@@ -17,6 +18,8 @@ void yargs(process.argv.slice(2))
     .parserConfiguration({"greedy-arrays": false})
     .usage("Find more information at https://github.com/firecow/cow_swarm")
     .env("COW_SWARM")
+    .command(diffCommand)
+    .command(deployCommand)
     .demandCommand()
     .fail((msg, err) => {
         if (!err) throw new assert.AssertionError({message: msg});

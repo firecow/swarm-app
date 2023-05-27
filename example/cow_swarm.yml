@@ -1,0 +1,42 @@
+---
+networks:
+  default:
+    attachable: true
+    external: false
+
+services:
+
+  nginx:
+    image: nginx
+    labels:
+      org.company.country: england
+    configs:
+      /etc/nginx/nginx.conf:
+        file: '{{ .Cow.Service }}/nginx.conf'
+      /etc/cloudflared/cert.pem:
+        content: |
+          location / {
+            root ${NGINX_FOLDER};
+          }
+    environment:
+      NGINX_FOLDER: html
+    networks:
+      default:
+        aliases:
+          - '{{ .Cow.Service }}'
+    replicas: 2
+    placement:
+      max_replicas_per_node: 1
+      preferences:
+        - { spread: node.hostname }
+      constraints:
+        - node.labels.purpose == generic
+    endpoints:
+      3300:
+        mode: host
+        source: 9000
+    mounts:
+      /etc/nginx/:
+        source: "web-data"
+        type: "volume" # bind
+        readonly: true

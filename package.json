@@ -8,12 +8,15 @@
     "test": "jest --coverage"
   },
   "dependencies": {
-    "chalk": "4.x",
+    "ajv": "8.x",
+    "dockerode": "3.x",
+    "js-yaml": "4.x",
     "source-map-support": "0.5.x",
     "yargs": "17.x"
   },
   "devDependencies": {
-    "@jest/globals": "29.x",
+    "@types/dockerode": "3.x",
+    "@types/js-yaml": "4.x",
     "@types/node": "18.x",
     "@typescript-eslint/eslint-plugin": "5.x",
     "@typescript-eslint/parser": "5.x",
@@ -52,7 +55,7 @@
       "@typescript-eslint/semi": "error",
       "@typescript-eslint/comma-dangle": [
         "error",
-        "only-multiline"
+        "always-multiline"
       ],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/require-await": "error",
