@@ -117,6 +117,7 @@
     "diff",
     "deploy",
     "wait",
-    "swarm"
+    "swarm",
+    "validate"
   ]
 }
