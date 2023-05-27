@@ -1,3 +1,5 @@
+{{ TOC }}
+
 # What?
 Cow Swarm deploys services to docker swarm in a controlled manner.
 
