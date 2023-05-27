@@ -27,7 +27,7 @@ services:
 ```
 
 ## Do I really need external config files?
-Nope, you can just inline them, and they get envsubst'ed. Escape with double dollar.
+Nope, you can just inline them, and they even get envsubst'ed. Escape with double dollar.
 ```sh
 export NGINX_FOLDER=html
 ```
@@ -42,7 +42,7 @@ services:
         }
 ```
 
-## Getting confused looking at the yaml?
+## Confused looking at the yaml?
 `cow_swarm.yml` is 100% explicit, no more optionals, no more short syntax.
 
 cow_swarm config isn't docker-compose or docker stack, but it does borrows the good parts.
