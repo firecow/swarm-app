@@ -3,7 +3,7 @@ import assert from "assert";
 import {CowSwarmConfig, loadCowSwarmConfig} from "./cow-swarm-config.js";
 import Docker from "dockerode";
 
-export const command = "deploy <stack_name>";
+export const command = "deploy <stack-name>";
 export const description = "Deploys config to swarm cluster";
 
 export async function createMissingNetworks (docker: Docker, config: CowSwarmConfig, stackName: string) {
@@ -30,7 +30,7 @@ export async function handler (args: ArgumentsCamelCase) {
     assert(Array.isArray(configFiles));
     const config = await loadCowSwarmConfig(configFiles);
 
-    const stackName = args["stack_name"];
+    const stackName = args["stackName"];
     assert(typeof stackName === "string");
 
     const docker = new Docker();
