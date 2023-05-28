@@ -1,8 +1,9 @@
-import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
 import yaml from "js-yaml";
 import fs from "fs";
-import Ajv from "ajv/dist/jtd.js";
 import {AssertionError} from "assert";
+import justExtend from "just-extend"
+import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
+import Ajv from "ajv/dist/jtd.js";
 
 export interface CowSwarmConfig {
     networks?: Record<string, {
@@ -118,10 +119,16 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
     },
 };
 
-export async function loadCowSwarmConfig (filename: string) {
-    const cowSwarmConfig = yaml.load(await fs.promises.readFile(filename, "utf8"));
+export async function loadCowSwarmConfig (filenames: string[]) {
+    let extendedCowSwarmConfig = {};
+    for (const filename of filenames) {
+        const cowSwarmConfig = yaml.load(await fs.promises.readFile(filename, "utf8"));
+        extendedCowSwarmConfig = justExtend(true, extendedCowSwarmConfig, cowSwarmConfig);
+    }
+
     const validate = new Ajv().compile(cowSwarmConfigSchema);
-    if (!validate(cowSwarmConfig)) {
+    if (!validate(extendedCowSwarmConfig)) {
         throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
     }
+    return extendedCowSwarmConfig;
 }

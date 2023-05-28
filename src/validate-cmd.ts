@@ -6,9 +6,9 @@ export const command = "validate";
 export const description = "Validates config fileby json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
-    const configFile = args["configFile"];
-    assert(Array.isArray(configFile));
-    await loadCowSwarmConfig(configFile[0]); // TODO: Add config deep merge functionality
+    const configFiles = args["configFile"];
+    assert(Array.isArray(configFiles));
+    await loadCowSwarmConfig(configFiles)
     console.log("Configuration file is valid");
 }
 

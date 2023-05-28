@@ -1,0 +1,10 @@
+---
+networks:
+  default:
+    attachable: true
+    external: false
+
+services:
+
+  nginx:
+    image: nginx:alpine

@@ -6,9 +6,9 @@ export const command = "deploy <name>";
 export const description = "Deploys config to swarm cluster";
 
 export async function handler (args: ArgumentsCamelCase) {
-    const configFile = args["configFile"];
-    assert(Array.isArray(configFile));
-    await loadCowSwarmConfig(configFile[0]); // TODO: Add config deep merge functionality
+    const configFiles = args["configFile"];
+    assert(Array.isArray(configFiles));
+    await loadCowSwarmConfig(configFiles);
     console.log("I still need some work");
 }
 
