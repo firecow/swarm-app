@@ -49,4 +49,4 @@ services:
 cowswarm config isn't docker-compose or docker stack, but it does borrow the good parts.
 
 ## Getting deployment errors tools could have found?
-`cowswarm validate` will exit with erros on every configuration mistake.
+`cowswarm validate` will exit with errors on every configuration mistake.
