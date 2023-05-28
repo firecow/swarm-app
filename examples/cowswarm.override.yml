@@ -1,11 +1,7 @@
 ---
-networks:
-  default:
-    attachable: true
-    external: false
-
 services:
 
   nginx:
     image: nginx:alpine
-    command: [sleep, infinity]
+    placement:
+      preferences: [{spread: node.hostname}]
