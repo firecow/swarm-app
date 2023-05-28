@@ -17,7 +17,14 @@ export async function handler (args: ArgumentsCamelCase) {
 
     const services = await docker.listServices({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
     for (const [serviceName, service] of Object.entries(config.services)) {
+        // TODO: Create needed configs from service.configs. Name == content checksum
+        // TODO: Create needed networks from service.networks. Leave out external:true one
+
         const serviceBody = {
+            // TODO: Create needed placeement from service.placement
+            // TODO: Create needed endpoints from service.endpoints
+            // TODO: Create needed mounts from service.mounts
+
             version: 0,
             Name: `${stackName}_${serviceName}`,
             Labels: {
@@ -27,8 +34,15 @@ export async function handler (args: ArgumentsCamelCase) {
             TaskTemplate: {
                 ContainerSpec: {
                     Image: service.image,
+                    Command: service.command,
+                    Labels: service.containerLabels,
+                    Env: Object.entries(service.environment ?? {}).map((k, v) => `${k}=${v}`),
+                    // Configs: TODO: Convert service.configs to docker api config references;
                 },
+
             },
+            Mode: {Replicated: {Replicas: service.replicas}},
+            // Networks: TODO: Convert service.networks to docker api network attachment
         };
 
         const foundService = services.find((s) => s.Spec?.Name === `${stackName}_${serviceName}`);

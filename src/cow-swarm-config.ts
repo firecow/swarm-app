@@ -14,6 +14,9 @@ export interface CowSwarmConfig {
         extends?: {file: string; name: string}[];
         image?: string;
         labels?: Record<string, string>;
+        command?: string[];
+        entrypoint?: string[];
+        containerLabels?: Record<string, string>;
         configs?: Record<string, {
             file?: string;
             content?: string;
@@ -56,6 +59,9 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
                     },
                     image: {type: "string"},
                     labels: {values: {type: "string"}},
+                    command: {elements: {type: "string"}},
+                    entrypoint: {elements: {type: "string"}},
+                    containerLabels: {values: {type: "string"}},
                     configs: {
                         values: {
                             optionalProperties: {

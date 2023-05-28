@@ -8,3 +8,4 @@ services:
 
   nginx:
     image: nginx:alpine
+    command: [sleep, infinity]
