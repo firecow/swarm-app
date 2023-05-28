@@ -16,9 +16,10 @@ export function builder (yargs: Argv) {
         description: "Stack name",
     });
     yargs.option("config-file", {
-        type: "string",
-        description: "Config file",
+        type: "array",
+        description: "Config file(s)",
         demandOption: false,
+        default: ["cowswarm.yml"],
         alias: "-f",
     });
     return yargs;

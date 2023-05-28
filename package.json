@@ -1,5 +1,5 @@
 {
-  "name": "cow_swarm",
+  "name": "cowswarm",
   "main": "src/index.js",
   "bin": "src/index.js",
   "scripts": {
@@ -103,14 +103,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/firecow/cow_swarm.git"
+    "url": "https://github.com/firecow/cowswarm.git"
   },
   "author": "Mads Jon Nielsen <madsjon@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/firecow/cow_swarm/issues"
+    "url": "https://github.com/firecow/cowswarm/issues"
   },
-  "homepage": "https://github.com/firecow/cow_swarm#readme",
+  "homepage": "https://github.com/firecow/cowswarm#readme",
   "keywords": [
     "docker",
     "stack",

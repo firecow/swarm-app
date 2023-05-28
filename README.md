@@ -1,5 +1,5 @@
 # What?
-Cow Swarm deploys services to docker swarm in a controlled manner.
+Cowswarm deploys services to docker swarm in a controlled manner.
 
 # Why?
 
@@ -12,10 +12,10 @@ Going from `replicated` to `global` and vice versa, no problem.
 Experiencing `network.alias` bugs, we got you covered.
 
 ## What will happen?
-`cow_swarm diff` gives a proper overview.
+`cowswarm diff` gives a proper overview.
 
 ## Was deployment succesful?
-`cow_swarm wait` gives a detailed answer.
+`cowswarm wait` gives a detailed answer.
 
 ## Duplicated yaml across multiple project?
 Extends from external source is here to help.
@@ -27,7 +27,7 @@ services:
 ```
 
 ## Do I really need external config files?
-Nope, you can just inline them and they even get envsubst'ed.
+Nope, you can just inline them, they even get envsubst'ed.
 Escape with double dollar.
 ```sh
 export NGINX_FOLDER=html
@@ -44,9 +44,9 @@ services:
 ```
 
 ## Confused looking at the yaml?
-`cow_swarm.yml` is very explicit, no more optionals, no more short syntax.
+`cowswarm.yml` is very explicit, no more optionals, no more short syntax.
 
-cow_swarm config isn't docker-compose or docker stack, but it does borrow the good parts.
+cowswarm config isn't docker-compose or docker stack, but it does borrow the good parts.
 
 ## Getting deployment errors tools could have found?
-`cow_swarm validate` will exit with erros on every configuration mistake.
+`cowswarm validate` will exit with erros on every configuration mistake.
