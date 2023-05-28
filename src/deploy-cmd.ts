@@ -13,6 +13,7 @@ export async function createMissingNetworks (docker: Docker, config: CowSwarmCon
     for (const [networkName, network] of Object.entries(config.networks).filter(([_, v]) => !v.external)) {
         const foundNetwork = networks.find((s) => s.Name === `${networkName}`);
         if (foundNetwork) continue;
+        console.log(`Creating network ${networkName}`);
         await docker.createNetwork({
             Name: `${networkName}`,
             Attachable: network.attachable,
@@ -77,9 +78,11 @@ export async function handler (args: ArgumentsCamelCase) {
         };
         const foundService = services.find((s) => s.Spec?.Name === `${stackName}_${serviceName}`);
         if (!foundService) {
+            console.log(`Creating service ${stackName}_${serviceName}`);
             await docker.createService(serviceBody);
         } else {
             serviceBody.version = foundService.Version?.Index ?? 0;
+            console.log(`Updating service ${stackName}_${serviceName}`);
             await docker.getService(foundService.ID).update(serviceBody);
         }
 
