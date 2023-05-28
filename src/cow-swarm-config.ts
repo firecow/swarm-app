@@ -1,7 +1,7 @@
 import yaml from "js-yaml";
 import fs from "fs";
 import {AssertionError} from "assert";
-import justExtend from "just-extend"
+import justExtend from "just-extend";
 import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
 import Ajv from "ajv/dist/jtd.js";
 

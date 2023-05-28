@@ -8,7 +8,7 @@ export const description = "Validates config fileby json schema";
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
     assert(Array.isArray(configFiles));
-    await loadCowSwarmConfig(configFiles)
+    await loadCowSwarmConfig(configFiles);
     console.log("Configuration file is valid");
 }
 
