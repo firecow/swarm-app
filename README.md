@@ -17,6 +17,9 @@ Experiencing `network.alias` bugs, we got you covered.
 ## Was deployment succesful?
 `cowswarm wait` gives a detailed answer.
 
+## Getting deployment errors tools could have found?
+`cowswarm validate` will exit with errors on every configuration mistake.
+
 ## Duplicated yaml across multiple project?
 Extends from external source is here to help.
 ```yml
@@ -47,6 +50,3 @@ services:
 `cowswarm.yml` is very explicit, no more optionals, no more short syntax.
 
 cowswarm config isn't docker-compose or docker stack, but it does borrow the good parts.
-
-## Getting deployment errors tools could have found?
-`cowswarm validate` will exit with errors on every configuration mistake.
