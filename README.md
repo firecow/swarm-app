@@ -20,6 +20,11 @@ Experiencing `network.alias` bugs, we got you covered.
 ## Getting deployment errors tools could have found?
 `cowswarm validate` will exit with errors on every configuration mistake.
 
+## Confused looking at the yaml?
+`cowswarm.yml` is very explicit, no more optionals, no more short syntax.
+
+cowswarm config isn't docker-compose or docker stack, but it does borrow the good parts.
+
 ## Duplicated yaml across multiple project?
 Extends from external source is here to help.
 ```yml
@@ -45,8 +50,3 @@ services:
           root ${NGINX_FOLDER};
         }
 ```
-
-## Confused looking at the yaml?
-`cowswarm.yml` is very explicit, no more optionals, no more short syntax.
-
-cowswarm config isn't docker-compose or docker stack, but it does borrow the good parts.
