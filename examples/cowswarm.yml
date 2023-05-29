@@ -1,6 +1,6 @@
 ---
 networks:
-  example_default:
+  example_default: # TODO: Don't require devs to prepend stack name
     attachable: true
     external: false
 
@@ -12,18 +12,27 @@ services:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
-        file: '{{ .Cow.Cwd }}/nginx.conf'
+        # file: '{{ .Cow.Cwd }}/nginx.conf' TODO: Do we really want .Cow.Cwd
+        file: 'examples/nginx.conf'
       /etc/nginx/nginx.d/default.conf:
         content: |
           location / {
-            root ${NGINX_FOLDER};
+            root html;
           }
+      # location / {
+      #   root ${NGINX_FOLDER}; TODO: Envsubst inline config
+      # }
+      # /etc/nginx/nginx.d/default01.conf: TODO: Remember to test config content that produces same hash
+      #  content: |
+      #    location / {
+      #      root ${NGINX_FOLDER};
+      #    }
     environment:
       NGINX_FOLDER: html
     networks:
-      example_default:
+      example_default: # TODO: Don't require devs to prepend stack name
         aliases:
-          - '{{ .Cow.ServiceName }}'
+          - '{{ .Cow.Shortname }}'
     replicas: 2
     placement:
       max_replicas_per_node: 2

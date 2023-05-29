@@ -1,22 +1,22 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
 import {CowSwarmConfig, loadCowSwarmConfig} from "./cow-swarm-config.js";
-import Docker from "dockerode";
+import Docker, {ConfigInfo, NetworkInspectInfo} from "dockerode";
+import {HashedConfigs, initHashedConfigs} from "./hashed-config.js";
 
 export const command = "deploy <stack-name>";
 export const description = "Deploys config to swarm cluster";
 
-export async function createMissingNetworks (docker: Docker, config: CowSwarmConfig, stackName: string) {
+export async function createMissingNetworks (docker: Docker, currentNetworks: NetworkInspectInfo[], config: CowSwarmConfig, stackName: string) {
     if (!config.networks) return;
-    const networks = await docker.listNetworks({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const [networkName, network] of Object.entries(config.networks).filter(([_, v]) => !v.external)) {
-        const foundNetwork = networks.find((s) => s.Name === `${networkName}`);
+    for (const [name, n] of Object.entries(config.networks).filter(([_, v]) => !v.external)) {
+        const foundNetwork = currentNetworks.find((n) => n.Name === `${name}`);
         if (foundNetwork) continue;
-        console.log(`Creating network ${networkName}`);
+        console.log(`Creating network ${name}`);
         await docker.createNetwork({
-            Name: `${networkName}`,
-            Attachable: network.attachable,
+            Name: `${name}`,
+            Attachable: n.attachable,
             Driver: "overlay",
             Labels: {
                 "com.docker.stack.namespace": stackName,
@@ -24,6 +24,26 @@ export async function createMissingNetworks (docker: Docker, config: CowSwarmCon
             },
         });
     }
+}
+
+export async function createMissingConfigs (docker: Docker, currentConfigs: ConfigInfo[], hashedConfigs: HashedConfigs, stackName: string): Promise<ConfigInfo[]> {
+    const newConfigs: ConfigInfo[] = [];
+    for (const h of hashedConfigs.unique()) {
+        const found = currentConfigs.find(c => c.Spec?.Name === h.hash);
+        if (found) continue;
+        console.log(`Creating config with hash ${h.hash}`);
+        const spec = {
+            Name: h.hash,
+            Labels: {
+                "com.docker.stack.namespace": stackName,
+                "cowswarm.stack_name": stackName,
+            },
+            Data: Buffer.from(h.content).toString("base64"),
+        };
+        const {id} = await docker.createConfig(spec);
+        newConfigs.push({ID: id, Spec: spec, CreatedAt: "", UpdatedAt: "", Version: {Index: 0}});
+    }
+    return newConfigs;
 }
 
 export async function handler (args: ArgumentsCamelCase) {
@@ -36,11 +56,16 @@ export async function handler (args: ArgumentsCamelCase) {
 
     const docker = new Docker();
 
-    await createMissingNetworks(docker, config, stackName);
+    const currentConfigs = await docker.listConfigs({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
+    const currentNetworks = await docker.listNetworks({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
+    const currentServices = await docker.listServices({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
 
-    const services = await docker.listServices({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
+    await createMissingNetworks(docker, currentNetworks, config, stackName);
+    const hashedConfigs = await initHashedConfigs(config);
+    const newConfigs = await createMissingConfigs(docker, currentConfigs, hashedConfigs, stackName);
+    newConfigs.forEach(n => currentConfigs.push(n));
+
     for (const [serviceName, service] of Object.entries(config.services)) {
-        // TODO: Create needed configs from service.configs. Name == content checksum
 
         const serviceBody = {
             // TODO: Create needed endpoints from service.endpoints
@@ -58,7 +83,13 @@ export async function handler (args: ArgumentsCamelCase) {
                     Command: service.command,
                     Labels: service.containerLabels,
                     Env: Object.entries(service.environment ?? {}).map(([k, v]) => `${k}=${v}`),
-                    // Configs: TODO: Convert service.configs to docker api config references;
+                    Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
+                        return {
+                            File: {Name: targetPath, UID: "0", GID: "0"},
+                            ConfigName: hash,
+                            ConfigID: currentConfigs.find(c => c.Spec?.Name === hash)?.ID,
+                        };
+                    }),
                 },
                 Placement: {
                     Constraints: service.placement?.constraints,
@@ -67,7 +98,7 @@ export async function handler (args: ArgumentsCamelCase) {
                     }),
                     MaxReplicas: service.placement?.max_replicas_per_node,
                 },
-                Networks: service.networks == null ? undefined : Object.entries(service.networks).map(([name, n]) => {
+                Networks: Object.entries(service.networks ?? {}).map(([name, n]) => {
                     return {
                         Target: name,
                         Aliases: n.aliases,
@@ -76,7 +107,7 @@ export async function handler (args: ArgumentsCamelCase) {
             },
             Mode: {Replicated: {Replicas: service.replicas}},
         };
-        const foundService = services.find((s) => s.Spec?.Name === `${stackName}_${serviceName}`);
+        const foundService = currentServices.find((s) => s.Spec?.Name === `${stackName}_${serviceName}`);
         if (!foundService) {
             console.log(`Creating service ${stackName}_${serviceName}`);
             await docker.createService(serviceBody);
@@ -92,7 +123,7 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargs.positional("stack_name", {
+    yargs.positional("stack-name", {
         type: "string",
         description: "Stack name",
     });
