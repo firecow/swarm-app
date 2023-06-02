@@ -29,10 +29,13 @@ export interface CowSwarmConfig {
             constraints?: string[];
             preferences?: {spread: string}[];
         };
-        endpoints?: Record<string, {
-            mode: "host" | "ingress";
-            source: number;
-        }>;
+        endpoint?: {
+            ports: {
+                protocol?: "tcp" | "udp";
+                published: number;
+                target: number;
+            }[];
+        };
         mounts?: Record<string, {
             source: string;
             type: "volume" | "bind";
@@ -86,11 +89,18 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
                             },
                         },
                     },
-                    endpoints: {
-                        values: {
-                            properties: {
-                                mode: {enum: ["host", "ingress"]},
-                                source: {type: "int16"},
+                    endpoint: {
+                        properties: {
+                            ports: {
+                                elements: {
+                                    properties: {
+                                        published: {type: "int16"},
+                                        target: {type: "int16"},
+                                    },
+                                    optionalProperties: {
+                                        protocol: {enum: ["tcp", "udp"]},
+                                    },
+                                },
                             },
                         },
                     },

@@ -66,7 +66,6 @@ export async function handler (args: ArgumentsCamelCase) {
     for (const [serviceName, service] of Object.entries(config.services)) {
 
         const serviceBody = {
-            // TODO: Create needed endpoints from service.endpoints
             // TODO: Create needed mounts from service.mounts
 
             version: 0,
@@ -97,6 +96,11 @@ export async function handler (args: ArgumentsCamelCase) {
                 },
                 Networks: service.networks?.map((name) => {
                     return {Target: name};
+                }),
+            },
+            EndpointSpec: {
+                Ports: service.endpoint?.ports.map(p => {
+                    return {TargetPort: p.target, PublishedPort: p.published, Protocol: p.protocol};
                 }),
             },
             Mode: {Replicated: {Replicas: service.replicas}},

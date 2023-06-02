@@ -35,10 +35,11 @@ services:
       max_replicas_per_node: 2
       constraints:
         - node.labels.purpose == generic
-    endpoints:
-      3300:
-        mode: host
-        source: 9000
+    endpoint:
+      ports:
+        - protocol: tcp
+          published: 8080
+          target: 80
     mounts:
       /etc/nginx/:
         source: "web-data"
