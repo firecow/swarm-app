@@ -9,8 +9,6 @@ Updating swarm config's used to be a pain, but not anymore.
 
 Going from `replicated` to `global` and vice versa, no problem.
 
-Experiencing `network.alias` bugs, we got you covered.
-
 ## What will happen?
 `cowswarm diff` gives a proper overview.
 
