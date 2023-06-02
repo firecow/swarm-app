@@ -30,9 +30,7 @@ services:
     environment:
       NGINX_FOLDER: html
     networks:
-      example_default: # TODO: Don't require devs to prepend stack name
-        aliases:
-          - '{{ .Cow.Shortname }}'
+      - example_default # TODO: Don't require devs to prepend stack name
     replicas: 2
     placement:
       max_replicas_per_node: 2

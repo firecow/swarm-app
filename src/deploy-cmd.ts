@@ -95,11 +95,8 @@ export async function handler (args: ArgumentsCamelCase) {
                     }),
                     MaxReplicas: service.placement?.max_replicas_per_node,
                 },
-                Networks: Object.entries(service.networks ?? {}).map(([name, n]) => {
-                    return {
-                        Target: name,
-                        Aliases: n.aliases,
-                    };
+                Networks: service.networks?.map((name) => {
+                    return {Target: name};
                 }),
             },
             Mode: {Replicated: {Replicas: service.replicas}},

@@ -22,9 +22,7 @@ export interface CowSwarmConfig {
             content?: string;
         }>;
         environment?: Record<string, string>;
-        networks?: Record<string, {
-            aliases?: string[];
-        }>;
+        networks?: string[];
         replicas?: number;
         placement?: {
             max_replicas_per_node?: number;
@@ -72,11 +70,7 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
                     },
                     environment: {values: {type: "string"}},
                     networks: {
-                        values: {
-                            optionalProperties: {
-                                aliases: {elements: {type: "string"}},
-                            },
-                        },
+                        elements: {type: "string"},
                     },
                     replicas: {type: "int32"},
                     placement: {
