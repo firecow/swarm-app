@@ -20,7 +20,6 @@ export async function createMissingNetworks (docker: Docker, currentNetworks: Ne
             Driver: "overlay",
             Labels: {
                 "com.docker.stack.namespace": stackName,
-                "cowswarm.stack_name": stackName,
             },
         });
     }
@@ -36,7 +35,6 @@ export async function createMissingConfigs (docker: Docker, currentConfigs: Conf
             Name: h.hash,
             Labels: {
                 "com.docker.stack.namespace": stackName,
-                "cowswarm.stack_name": stackName,
             },
             Data: Buffer.from(h.content).toString("base64"),
         };
@@ -75,7 +73,6 @@ export async function handler (args: ArgumentsCamelCase) {
             Name: `${stackName}_${serviceName}`,
             Labels: {
                 "com.docker.stack.namespace": stackName,
-                "cowswarm.stack_name": stackName,
             },
             TaskTemplate: {
                 ContainerSpec: {
@@ -117,6 +114,7 @@ export async function handler (args: ArgumentsCamelCase) {
             await docker.getService(foundService.ID).update(serviceBody);
         }
 
+        // TODO: Remove unused configs
     }
 
     console.log("I still need some work");
