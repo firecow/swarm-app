@@ -35,7 +35,7 @@ services:
       max_replicas_per_node: 2
       constraints:
         - node.labels.purpose == generic
-    endpoint:
+    endpoint_spec:
       ports:
         - protocol: tcp
           published: 8080

@@ -99,7 +99,7 @@ export async function handler (args: ArgumentsCamelCase) {
                 }),
             },
             EndpointSpec: {
-                Ports: service.endpoint?.ports.map(p => {
+                Ports: service.endpoint_spec?.ports.map(p => {
                     return {TargetPort: p.target, PublishedPort: p.published, Protocol: p.protocol};
                 }),
             },

@@ -29,7 +29,7 @@ export interface CowSwarmConfig {
             constraints?: string[];
             preferences?: {spread: string}[];
         };
-        endpoint?: {
+        endpoint_spec?: {
             ports: {
                 protocol?: "tcp" | "udp";
                 published: number;
@@ -89,7 +89,7 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
                             },
                         },
                     },
-                    endpoint: {
+                    endpoint_spec: {
                         properties: {
                             ports: {
                                 elements: {
