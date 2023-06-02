@@ -12,7 +12,6 @@ services:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
-        # file: '{{ .Cow.Cwd }}/nginx.conf' TODO: Do we really want .Cow.Cwd
         file: 'examples/nginx.conf'
       /etc/nginx/nginx.d/default.conf:
         content: |
