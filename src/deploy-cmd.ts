@@ -3,6 +3,8 @@ import assert from "assert";
 import {CowSwarmConfig, loadCowSwarmConfig} from "./cow-swarm-config.js";
 import Docker, {ConfigInfo, NetworkInspectInfo} from "dockerode";
 import {HashedConfigs, initHashedConfigs} from "./hashed-config.js";
+import deepExtend from "deep-extend";
+import fs from "fs";
 
 export const command = "deploy <stack-name>";
 export const description = "Deploys config to swarm cluster";
@@ -64,10 +66,50 @@ export async function handler (args: ArgumentsCamelCase) {
     newConfigs.forEach(n => currentConfigs.push(n));
 
     for (const [serviceName, service] of Object.entries(config.services)) {
+        let body: any = {};
+
+        for (const e of service.extends ?? []) {
+            const config = await loadCowSwarmConfig([e.file]);
+            const service = config.services[e.service];
+            body = deepExtend(body, {
+                Labels: {},
+                TaskTemplate: {
+                    ContainerSpec: {
+                        Image: service.image,
+                        Command: service.command,
+                        Labels: service.containerLabels,
+                        Env: Object.entries(service.environment ?? {}).map(([k, v]) => `${k}=${v}`),
+                        Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
+                            return {
+                                File: {Name: targetPath, UID: "0", GID: "0"},
+                                ConfigName: hash,
+                                ConfigID: currentConfigs.find(c => c.Spec?.Name === hash)?.ID,
+                            };
+                        }),
+                    },
+                    Placement: {
+                        Constraints: service.placement?.constraints,
+                        Preferences: service.placement?.preferences?.map(p => {
+                            return {Spread: {SpreadDescriptor: p.spread}};
+                        }),
+                        MaxReplicas: service.placement?.max_replicas_per_node,
+                    },
+                    Networks: service.networks?.map((name) => {
+                        return {Target: name};
+                    }),
+                },
+                EndpointSpec: {
+                    Ports: service.endpoint_spec?.ports.map(p => {
+                        return {TargetPort: p.target, PublishedPort: p.published, Protocol: p.protocol};
+                    }),
+                },
+                Mode: {Replicated: {Replicas: service.replicas}},
+            });
+        }
 
         const serviceBody = {
             // TODO: Create needed mounts from service.mounts
-
+            // TODO: Implement user specified labels from cowswarm.yml
             version: 0,
             Name: `${stackName}_${serviceName}`,
             Labels: {
@@ -105,14 +147,22 @@ export async function handler (args: ArgumentsCamelCase) {
             },
             Mode: {Replicated: {Replicas: service.replicas}},
         };
+
+
+        console.log(body.TaskTemplate.ContainerSpec);
+
+        body = deepExtend(body, serviceBody);
+
+        console.log(body.TaskTemplate.ContainerSpec);
+
         const foundService = currentServices.find((s) => s.Spec?.Name === `${stackName}_${serviceName}`);
         if (!foundService) {
             console.log(`Creating service ${stackName}_${serviceName}`);
-            await docker.createService(serviceBody);
+            await docker.createService(body);
         } else {
-            serviceBody.version = foundService.Version?.Index ?? 0;
+            body.version = foundService.Version?.Index ?? 0;
             console.log(`Updating service ${stackName}_${serviceName}`);
-            await docker.getService(foundService.ID).update(serviceBody);
+            await docker.getService(foundService.ID).update(body);
         }
 
         // TODO: Remove unused configs

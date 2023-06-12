@@ -7,7 +7,8 @@ networks:
 services:
 
   nginx:
-    image: nginx
+    extends:
+      - { file: examples/cowswarm.lib.yml, service: nginx }
     labels:
       org.company.country: england
     configs:

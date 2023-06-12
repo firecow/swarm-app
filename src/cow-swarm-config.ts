@@ -11,7 +11,7 @@ export interface CowSwarmConfig {
         external: boolean;
     }>;
     services: Record<string, {
-        extends?: {file: string; name: string}[];
+        extends?: {file: string; service: string}[];
         image?: string;
         labels?: Record<string, string>;
         command?: string[];
@@ -54,7 +54,7 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
                         elements: {
                             properties: {
                                 file: {type: "string"},
-                                name: {type: "string"},
+                                service: {type: "string"},
                             },
                         },
                     },

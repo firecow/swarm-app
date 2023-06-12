@@ -2,6 +2,6 @@
 services:
 
   nginx:
-    image: nginx:alpine
+    # image: nginx:alpine
     placement:
       preferences: [{spread: node.hostname}]
