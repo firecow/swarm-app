@@ -81,7 +81,7 @@ export async function handler (args: ArgumentsCamelCase) {
                     Env: Object.entries(service.environment ?? {}).map(([k, v]) => `${k}=${v}`),
                     Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
                         return {
-                            File: {Name: targetPath, UID: "0", GID: "0"},
+                            File: {Name: targetPath, UID: "0", GID: "0", Mode: undefined},
                             ConfigName: hash,
                             ConfigID: currentConfigs.find(c => c.Spec?.Name === hash)?.ID,
                         };
