@@ -1,8 +1,8 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
-import {SwarmAppConfig, loadSwarmAppConfig} from "./swarm-app-config.js";
+import {SwarmAppConfig, loadSwarmAppConfig} from "../swarm-app-config.js";
 import Docker, {ConfigInfo, NetworkInspectInfo} from "dockerode";
-import {HashedConfigs, initHashedConfigs} from "./hashed-config.js";
+import {HashedConfigs, initHashedConfigs} from "../hashed-config.js";
 
 export const command = "deploy <stack-name>";
 export const description = "Deploys config to swarm cluster";
@@ -44,7 +44,7 @@ export async function createMissingConfigs (docker: Docker, currentConfigs: Conf
 }
 
 export function initServiceSpec (stackName: string, serviceName: string, config: SwarmAppConfig, hashedConfigs: HashedConfigs, currentConfigs: ConfigInfo[]) {
-    const service = config.services[serviceName];
+    const serviceConfig = config.services[serviceName];
     return {
         // TODO: Create needed mounts from service.mounts and use them in container spec.
         // TODO: Going from replicated to global and vice versa, no problem.
@@ -56,10 +56,11 @@ export function initServiceSpec (stackName: string, serviceName: string, config:
         },
         TaskTemplate: {
             ContainerSpec: {
-                Image: service.image,
-                Command: service.command,
-                Labels: service.containerLabels,
-                Env: Object.entries(service.environment ?? {}).map(([k, v]) => `${k}=${v}`),
+                Image: serviceConfig.image,
+                Command: serviceConfig.command,
+                Labels: serviceConfig.containerLabels,
+                Env: Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`),
+                StopSignal: serviceConfig.stop_signal,
                 Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
                     return {
                         File: {Name: targetPath, UID: "0", GID: "0", Mode: undefined},
@@ -69,13 +70,13 @@ export function initServiceSpec (stackName: string, serviceName: string, config:
                 }),
             },
             Placement: {
-                Constraints: service.placement?.constraints,
-                Preferences: service.placement?.preferences?.map(p => {
+                Constraints: serviceConfig.placement?.constraints,
+                Preferences: serviceConfig.placement?.preferences?.map(p => {
                     return {Spread: {SpreadDescriptor: p.spread}};
                 }),
-                MaxReplicas: service.placement?.max_replicas_per_node,
+                MaxReplicas: serviceConfig.placement?.max_replicas_per_node,
             },
-            Networks: service.networks?.map((networkKey) => {
+            Networks: serviceConfig.networks?.map((networkKey) => {
                 assert(config.networks != null, "config.networks should not be able to be empty");
                 assert(config.networks[networkKey]?.name != null, "config.networks should not be able to be empty");
                 const networkName = config.networks[networkKey].name;
@@ -83,11 +84,11 @@ export function initServiceSpec (stackName: string, serviceName: string, config:
             }),
         },
         EndpointSpec: {
-            Ports: service.endpoint_spec?.ports.map(p => {
+            Ports: serviceConfig.endpoint_spec?.ports.map(p => {
                 return {TargetPort: p.target, PublishedPort: p.published, Protocol: p.protocol};
             }),
         },
-        Mode: {Replicated: {Replicas: service.replicas}},
+        Mode: {Replicated: {Replicas: serviceConfig.replicas}},
     };
 }
 
@@ -124,8 +125,6 @@ export async function handler (args: ArgumentsCamelCase) {
     // TODO: Remove unused configs
     // TODO: Remove unused networks
     // TODO: Remove unused services
-
-    console.log("I still need some work");
 }
 
 export function builder (yargs: Argv) {

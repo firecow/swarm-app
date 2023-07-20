@@ -43,8 +43,11 @@ export NGINX_FOLDER=html
 services:
   nginx:
     configs:
-      nginx-conf: |
-        location / {
-          root ${NGINX_FOLDER};
-        }
+      /etc/nginx/conf.d/default.conf:
+        content: |
+          server {
+            location / {
+              root ${NGINX_FOLDER};
+            }
+          }
 ```

@@ -1,7 +1,7 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import timers from "timers/promises";
 import assert from "assert";
-import {loadSwarmAppConfig} from "./swarm-app-config.js";
+import {loadSwarmAppConfig} from "../swarm-app-config.js";
 
 export const command = "diff <stack-name>";
 export const description = "Show differences between cluster and config";

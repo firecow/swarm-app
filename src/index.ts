@@ -1,9 +1,9 @@
 import "source-map-support/register.js";
 import yargs from "yargs";
 import assert from "assert";
-import * as diffCommand from "./diff-cmd.js";
-import * as deployCommand from "./deploy-cmd.js";
-import * as validateCommand from "./validate-cmd.js";
+import * as diffCommand from "./commands/diff-cmd.js";
+import * as deployCommand from "./commands/deploy-cmd.js";
+import * as validateCommand from "./commands/validate-cmd.js";
 
 process.on("uncaughtException", (err) => {
     if (err instanceof assert.AssertionError) {

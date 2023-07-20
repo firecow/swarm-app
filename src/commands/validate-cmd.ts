@@ -1,6 +1,6 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
-import {loadSwarmAppConfig} from "./swarm-app-config.js";
+import {loadSwarmAppConfig} from "../swarm-app-config.js";
 
 export const command = "validate";
 export const description = "Validates config fileby json schema";

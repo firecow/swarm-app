@@ -9,22 +9,28 @@ services:
 
   nginx:
     image: nginx
+    # TODO: Rename to container_labels
+    # TODO: Implement service_labels
     labels:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
         # TODO: Rename to source: instead of file:
         file: 'examples/nginx.conf'
-#      /etc/nginx/nginx.d/default.conf:
-#        content: |
-#          location / {
-#            root ${NGINX_FOLDER}
-#          }
+      /etc/nginx/conf.d/default.conf:
+        content: |
+          server {
+            location / {
+              root ${NGINX_FOLDER};
+            }
+          }
+    # TODO: Implement env_file
     environment:
       NGINX_FOLDER: html
     networks:
       - default
     replicas: 2
+    stop_signal: SIGQUIT
     placement:
       max_replicas_per_node: 2
       constraints:
