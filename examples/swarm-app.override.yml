@@ -4,4 +4,4 @@ services:
   nginx:
     image: nginx:alpine
     placement:
-      preferences: [{spread: node.hostname}]
+      preferences: [{ spread: node.hostname }]
