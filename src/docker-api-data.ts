@@ -14,6 +14,7 @@ export async function convertClusterToSwarmAppConfig (docker: Docker, name: stri
     const networks = await docker.listNetworks({filters: {label: [`com.docker.stack.namespace=${name}`]}});
     // const services = await docker.listServices({filters: {label: [`com.docker.stack.namespace=${name}`]}});
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     networks.forEach((n) => {
         assert(swarmAppConfig.networks);
         // swarmAppConfig.networks[n.Name] = {
