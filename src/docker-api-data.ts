@@ -1,9 +1,9 @@
 import Docker from "dockerode";
-import {CowSwarmConfig} from "./cow-swarm-config.js";
+import {SwarmAppConfig} from "./swarm-app-config.js";
 import assert from "assert";
 
-export async function convertClusterToCowSwarmConfig (docker: Docker, name: string) {
-    const cowSwarmConfig: CowSwarmConfig = {
+export async function convertClusterToSwarmAppConfig (docker: Docker, name: string) {
+    const swarmAppConfig: SwarmAppConfig = {
         services: {},
         networks: {},
     };
@@ -15,12 +15,12 @@ export async function convertClusterToCowSwarmConfig (docker: Docker, name: stri
     // const services = await docker.listServices({filters: {label: [`com.docker.stack.namespace=${name}`]}});
 
     networks.forEach((n) => {
-        assert(cowSwarmConfig.networks);
-        cowSwarmConfig.networks[n.Name] = {
-            attachable: n.Attachable,
-            external: false, // How the duce is deducted from the docker api.
-        };
+        assert(swarmAppConfig.networks);
+        // swarmAppConfig.networks[n.Name] = {
+        //     attachable: n.Attachable,
+        //     external: false, // How the duce is deducted from the docker api.
+        // };
     });
 
-    return cowSwarmConfig;
+    return swarmAppConfig;
 }

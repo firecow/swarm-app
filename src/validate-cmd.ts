@@ -1,14 +1,16 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
-import {loadCowSwarmConfig} from "./cow-swarm-config.js";
+import {loadSwarmAppConfig} from "./swarm-app-config.js";
 
 export const command = "validate";
 export const description = "Validates config fileby json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
+    const stackName = args["stackName"];
+    assert(typeof stackName === "string");
     assert(Array.isArray(configFiles));
-    await loadCowSwarmConfig(configFiles);
+    await loadSwarmAppConfig(configFiles, stackName);
     console.log("Configuration file is valid");
 }
 
@@ -17,8 +19,8 @@ export function builder (yargs: Argv) {
         type: "array",
         description: "Config file(s)",
         demandOption: false,
-        default: ["cowswarm.yml"],
-        alias: "-f",
+        default: ["swarm-app.yml"],
+        alias: "f",
     });
     return yargs;
 }

@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import {CowSwarmConfig} from "./cow-swarm-config.js";
+import {SwarmAppConfig} from "./swarm-app-config.js";
 import fs from "fs";
 import {AssertionError} from "assert";
 
@@ -39,7 +39,7 @@ export class HashedConfigs {
     }
 }
 
-export async function initHashedConfigs (config: CowSwarmConfig) {
+export async function initHashedConfigs (config: SwarmAppConfig) {
     const hashedConfigs = new HashedConfigs();
     for (const [serviceName, s] of Object.entries(config.services)) {
         if (!s.configs) continue;

@@ -1,5 +1,5 @@
 # What?
-Cowswarm deploys services to docker swarm in a controlled manner.
+Swarm-App deploys services to docker swarm in a controlled manner.
 
 # Why?
 
@@ -10,18 +10,18 @@ Updating swarm config's used to be a pain, but not anymore.
 Going from `replicated` to `global` and vice versa, no problem.
 
 ## What will happen?
-`cowswarm diff` gives a proper overview.
+`swarm-app diff` gives a proper overview.
 
 ## Was deployment succesful?
-`cowswarm wait` gives a detailed answer.
+`swarm-app wait` gives a detailed answer.
 
 ## Getting deployment errors tools could have found?
-`cowswarm validate` will exit with errors on every configuration mistake.
+`swarm-app validate` will exit with errors on every configuration mistake.
 
 ## Confused looking at the yaml?
-`cowswarm.yml` is very explicit, no more optionals, no more short syntax.
+`swarm-app.yml` is very explicit, no more optionals, no more short syntax.
 
-cowswarm config isn't docker-compose or docker stack, but it does borrow the good parts.
+swarm-app config isn't docker-compose or docker stack, but it does borrow the good parts.
 
 ## Duplicated yaml across multiple project?
 Extends from external source is here to help.
@@ -29,10 +29,10 @@ Extends from external source is here to help.
 services:
   mywebserver:
     extends: 
-      - { file: https://cow-swarm.firecow.dk/1.0.0/general.yml, service: nginx }
+      - { file: https://swarm-app.firecow.dk/1.0.0/general.yml, service: nginx }
 ```
 
-## Do I really need external config files?
+## Do I really need source files for configs?
 Nope, you can just inline them, they even get envsubst'ed.
 Escape with double dollar.
 ```sh

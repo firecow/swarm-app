@@ -4,48 +4,55 @@ import {AssertionError} from "assert";
 import justExtend from "just-extend";
 import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
 import Ajv from "ajv/dist/jtd.js";
+import traverse from "traverse";
+import envsubst from "./envsubst.js";
 
-export interface CowSwarmConfig {
-    networks?: Record<string, {
-        attachable: boolean;
-        external: boolean;
+export interface SwarmAppNetworkConfig {
+    attachable: boolean;
+    external: boolean;
+    name: string;
+}
+
+export interface SwarmAppServiceConfig {
+    extends?: {file: string; name: string}[];
+    image?: string;
+    labels?: Record<string, string>;
+    command?: string[];
+    entrypoint?: string[];
+    containerLabels?: Record<string, string>;
+    configs?: Record<string, {
+        file?: string;
+        content?: string;
     }>;
-    services: Record<string, {
-        extends?: {file: string; name: string}[];
-        image?: string;
-        labels?: Record<string, string>;
-        command?: string[];
-        entrypoint?: string[];
-        containerLabels?: Record<string, string>;
-        configs?: Record<string, {
-            file?: string;
-            content?: string;
-        }>;
-        environment?: Record<string, string>;
-        networks?: string[];
-        replicas?: number;
-        placement?: {
-            max_replicas_per_node?: number;
-            constraints?: string[];
-            preferences?: {spread: string}[];
-        };
-        endpoint_spec?: {
-            ports: {
-                protocol?: "tcp" | "udp";
-                published: number;
-                target: number;
-            }[];
-        };
-        mounts?: Record<string, {
-            source: string;
-            type: "volume" | "bind";
-            readonly: boolean;
-        }>;
+    environment?: Record<string, string>;
+    networks?: string[];
+    replicas?: number;
+    placement?: {
+        max_replicas_per_node?: number;
+        constraints?: string[];
+        preferences?: {spread: string}[];
+    };
+    endpoint_spec?: {
+        ports: {
+            protocol?: "tcp" | "udp";
+            published: number;
+            target: number;
+        }[];
+    };
+    mounts?: Record<string, {
+        source: string;
+        type: "volume" | "bind";
+        readonly: boolean;
     }>;
 }
 
+export interface SwarmAppConfig {
+    networks?: Record<string, SwarmAppNetworkConfig>;
+    services: Record<string, SwarmAppServiceConfig>;
+}
 
-export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
+
+export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
     properties: {
         services: {
             values: {
@@ -121,6 +128,7 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
         networks: {
             values: {
                 properties: {
+                    name: {type: "string"},
                     attachable: {type: "boolean"},
                     external: {type: "boolean"},
                 },
@@ -129,16 +137,34 @@ export const cowSwarmConfigSchema: JTDSchemaType<CowSwarmConfig> = {
     },
 };
 
-export async function loadCowSwarmConfig (filenames: string[]) {
-    let extendedCowSwarmConfig = {};
+export async function loadSwarmAppConfig (filenames: string[], stackName: string) {
+    let extendedSwarmAppConfig = {};
     for (const filename of filenames) {
-        const cowSwarmConfig = yaml.load(await fs.promises.readFile(filename, "utf8"));
-        extendedCowSwarmConfig = justExtend(true, extendedCowSwarmConfig, cowSwarmConfig);
+        const swarmAppConfig = yaml.load(await fs.promises.readFile(filename, "utf8"));
+        extendedSwarmAppConfig = justExtend(true, extendedSwarmAppConfig, swarmAppConfig);
     }
 
-    const validate = new Ajv().compile(cowSwarmConfigSchema);
-    if (!validate(extendedCowSwarmConfig)) {
+    // Envsubst all fields
+    traverse(extendedSwarmAppConfig).forEach(function (v) {
+        if (typeof v !== "string") return;
+        this.update(envsubst(v, process.env));
+    });
+
+    // Validate json schema
+    const validate = new Ajv().compile(swarmAppConfigSchema);
+    if (!validate(extendedSwarmAppConfig)) {
         throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
     }
-    return extendedCowSwarmConfig;
+
+    // Add default network
+    if (extendedSwarmAppConfig.networks == null || extendedSwarmAppConfig.networks["default"] == null) {
+        extendedSwarmAppConfig.networks = extendedSwarmAppConfig.networks ?? {};
+        extendedSwarmAppConfig.networks["default"] = {
+            name: `${stackName}_default`,
+            attachable: false,
+            external: false,
+        };
+    }
+
+    return extendedSwarmAppConfig;
 }

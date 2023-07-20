@@ -1,21 +1,20 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
-import {CowSwarmConfig, loadCowSwarmConfig} from "./cow-swarm-config.js";
+import {SwarmAppConfig, loadSwarmAppConfig} from "./swarm-app-config.js";
 import Docker, {ConfigInfo, NetworkInspectInfo} from "dockerode";
 import {HashedConfigs, initHashedConfigs} from "./hashed-config.js";
 
 export const command = "deploy <stack-name>";
 export const description = "Deploys config to swarm cluster";
 
-export async function createMissingNetworks (docker: Docker, currentNetworks: NetworkInspectInfo[], config: CowSwarmConfig, stackName: string) {
+export async function createMissingNetworks (docker: Docker, currentNetworks: NetworkInspectInfo[], config: SwarmAppConfig, stackName: string) {
     if (!config.networks) return;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const [name, n] of Object.entries(config.networks).filter(([_, v]) => !v.external)) {
-        const foundNetwork = currentNetworks.find((n) => n.Name === `${name}`);
+    for (const n of Object.values(config.networks).filter(e => !e.external)) {
+        const foundNetwork = currentNetworks.find(c => c.Name === `${n.name}`);
         if (foundNetwork) continue;
-        console.log(`Creating network ${name}`);
+        console.log(`Creating network ${n.name}`);
         await docker.createNetwork({
-            Name: `${name}`,
+            Name: n.name,
             Attachable: n.attachable,
             Driver: "overlay",
             Labels: {
@@ -44,79 +43,86 @@ export async function createMissingConfigs (docker: Docker, currentConfigs: Conf
     return newConfigs;
 }
 
+export function initServiceSpec (stackName: string, serviceName: string, config: SwarmAppConfig, hashedConfigs: HashedConfigs, currentConfigs: ConfigInfo[]) {
+    const service = config.services[serviceName];
+    return {
+        // TODO: Create needed mounts from service.mounts and use them in container spec.
+
+        version: 0,
+        Name: `${stackName}_${serviceName}`,
+        Labels: {
+            "com.docker.stack.namespace": stackName,
+        },
+        TaskTemplate: {
+            ContainerSpec: {
+                Image: service.image,
+                Command: service.command,
+                Labels: service.containerLabels,
+                Env: Object.entries(service.environment ?? {}).map(([k, v]) => `${k}=${v}`),
+                Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
+                    return {
+                        File: {Name: targetPath, UID: "0", GID: "0", Mode: undefined},
+                        ConfigName: hash,
+                        ConfigID: currentConfigs.find(c => c.Spec?.Name === hash)?.ID,
+                    };
+                }),
+            },
+            Placement: {
+                Constraints: service.placement?.constraints,
+                Preferences: service.placement?.preferences?.map(p => {
+                    return {Spread: {SpreadDescriptor: p.spread}};
+                }),
+                MaxReplicas: service.placement?.max_replicas_per_node,
+            },
+            Networks: service.networks?.map((networkKey) => {
+                assert(config.networks != null, "config.networks should not be able to be empty");
+                assert(config.networks[networkKey]?.name != null, "config.networks should not be able to be empty");
+                const networkName = config.networks[networkKey].name;
+                return {Target: networkName};
+            }),
+        },
+        EndpointSpec: {
+            Ports: service.endpoint_spec?.ports.map(p => {
+                return {TargetPort: p.target, PublishedPort: p.published, Protocol: p.protocol};
+            }),
+        },
+        Mode: {Replicated: {Replicas: service.replicas}},
+    };
+}
+
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
-    assert(Array.isArray(configFiles));
-    const config = await loadCowSwarmConfig(configFiles);
-
     const stackName = args["stackName"];
     assert(typeof stackName === "string");
+    assert(Array.isArray(configFiles));
+    const config = await loadSwarmAppConfig(configFiles, stackName);
 
     const docker = new Docker();
-
     const currentConfigs = await docker.listConfigs({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
     const currentNetworks = await docker.listNetworks({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
     const currentServices = await docker.listServices({filters: {label: [`com.docker.stack.namespace=${stackName}`]}});
 
     await createMissingNetworks(docker, currentNetworks, config, stackName);
+
     const hashedConfigs = await initHashedConfigs(config);
-    const newConfigs = await createMissingConfigs(docker, currentConfigs, hashedConfigs, stackName);
-    newConfigs.forEach(n => currentConfigs.push(n));
+    (await createMissingConfigs(docker, currentConfigs, hashedConfigs, stackName)).forEach(n => currentConfigs.push(n));
 
-    for (const [serviceName, service] of Object.entries(config.services)) {
-
-        const serviceBody = {
-            // TODO: Create needed mounts from service.mounts
-
-            version: 0,
-            Name: `${stackName}_${serviceName}`,
-            Labels: {
-                "com.docker.stack.namespace": stackName,
-            },
-            TaskTemplate: {
-                ContainerSpec: {
-                    Image: service.image,
-                    Command: service.command,
-                    Labels: service.containerLabels,
-                    Env: Object.entries(service.environment ?? {}).map(([k, v]) => `${k}=${v}`),
-                    Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
-                        return {
-                            File: {Name: targetPath, UID: "0", GID: "0", Mode: undefined},
-                            ConfigName: hash,
-                            ConfigID: currentConfigs.find(c => c.Spec?.Name === hash)?.ID,
-                        };
-                    }),
-                },
-                Placement: {
-                    Constraints: service.placement?.constraints,
-                    Preferences: service.placement?.preferences?.map(p => {
-                        return {Spread: {SpreadDescriptor: p.spread}};
-                    }),
-                    MaxReplicas: service.placement?.max_replicas_per_node,
-                },
-                Networks: service.networks?.map((name) => {
-                    return {Target: name};
-                }),
-            },
-            EndpointSpec: {
-                Ports: service.endpoint_spec?.ports.map(p => {
-                    return {TargetPort: p.target, PublishedPort: p.published, Protocol: p.protocol};
-                }),
-            },
-            Mode: {Replicated: {Replicas: service.replicas}},
-        };
+    for (const serviceName of Object.keys(config.services)) {
+        const serviceSpec = initServiceSpec(stackName, serviceName, config, hashedConfigs, currentConfigs);
         const foundService = currentServices.find((s) => s.Spec?.Name === `${stackName}_${serviceName}`);
         if (!foundService) {
             console.log(`Creating service ${stackName}_${serviceName}`);
-            await docker.createService(serviceBody);
+            await docker.createService(serviceSpec);
         } else {
-            serviceBody.version = foundService.Version?.Index ?? 0;
+            serviceSpec.version = foundService.Version?.Index ?? 0;
             console.log(`Updating service ${stackName}_${serviceName}`);
-            await docker.getService(foundService.ID).update(serviceBody);
+            await docker.getService(foundService.ID).update(serviceSpec);
         }
-
-        // TODO: Remove unused configs
     }
+
+    // TODO: Remove unused configs
+    // TODO: Remove unused networks
+    // TODO: Remove unused services
 
     console.log("I still need some work");
 }
@@ -130,8 +136,8 @@ export function builder (yargs: Argv) {
         type: "array",
         description: "Config file(s)",
         demandOption: false,
-        default: ["cowswarm.yml"],
-        alias: "-f",
+        default: ["swarm-app.yml"],
+        alias: "f",
     });
     return yargs;
 }

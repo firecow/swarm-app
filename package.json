@@ -1,5 +1,5 @@
 {
-  "name": "cowswarm",
+  "name": "swarm-app",
   "main": "src/index.js",
   "bin": "src/index.js",
   "scripts": {
@@ -11,14 +11,16 @@
     "ajv": "8.x",
     "dockerode": "3.x",
     "js-yaml": "4.x",
-    "just-extend": "6.2.0",
+    "just-extend": "6.x.x",
     "source-map-support": "0.5.x",
+    "traverse": "0.6.x",
     "yargs": "17.x"
   },
   "devDependencies": {
     "@types/dockerode": "3.x",
     "@types/js-yaml": "4.x",
     "@types/node": "18.x",
+    "@types/traverse": "0.6.x",
     "@typescript-eslint/eslint-plugin": "5.x",
     "@typescript-eslint/parser": "5.x",
     "eslint": "8.x",
@@ -104,14 +106,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/firecow/cowswarm.git"
+    "url": "https://github.com/firecow/swarm-app.git"
   },
   "author": "Mads Jon Nielsen <madsjon@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/firecow/cowswarm/issues"
+    "url": "https://github.com/firecow/swarm-app/issues"
   },
-  "homepage": "https://github.com/firecow/cowswarm#readme",
+  "homepage": "https://github.com/firecow/swarm-app#readme",
   "keywords": [
     "docker",
     "stack",
