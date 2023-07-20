@@ -156,7 +156,7 @@ export async function loadSwarmAppConfig (filenames: string[], stackName: string
         throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
     }
 
-    // Add default network
+    // Add default network if not defined
     if (extendedSwarmAppConfig.networks == null || extendedSwarmAppConfig.networks["default"] == null) {
         extendedSwarmAppConfig.networks = extendedSwarmAppConfig.networks ?? {};
         extendedSwarmAppConfig.networks["default"] = {
