@@ -166,5 +166,7 @@ export async function loadSwarmAppConfig (filenames: string[], stackName: string
         };
     }
 
+    // TODO: Download yml specified in extends and merge them.
+
     return extendedSwarmAppConfig;
 }

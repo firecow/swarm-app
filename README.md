@@ -16,7 +16,7 @@ Going from `replicated` to `global` and vice versa, no problem.
 `swarm-app wait` gives a detailed answer.
 
 ## Getting deployment errors tools could have found?
-`swarm-app validate` will exit with errors on every configuration mistake.
+`swarm-app validate` will exit with errors on configuration mistake.
 
 ## Confused looking at the yaml?
 `swarm-app.yml` is very explicit, no more optionals, no more short syntax.

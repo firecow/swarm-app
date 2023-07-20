@@ -47,6 +47,7 @@ export function initServiceSpec (stackName: string, serviceName: string, config:
     const service = config.services[serviceName];
     return {
         // TODO: Create needed mounts from service.mounts and use them in container spec.
+        // TODO: Going from replicated to global and vice versa, no problem.
 
         version: 0,
         Name: `${stackName}_${serviceName}`,
