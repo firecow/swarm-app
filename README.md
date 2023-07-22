@@ -1,5 +1,5 @@
 # What?
-Swarm-App deploys services to docker swarm in a controlled manner.
+Deploy application stacks to docker swarm in a controlled manner.
 
 # Why?
 
