@@ -139,7 +139,7 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
     },
 };
 
-export async function loadSwarmAppConfig (filenames: string[], stackName: string) {
+export async function loadSwarmAppConfig (filenames: string[]) {
     let extendedSwarmAppConfig = {};
     for (const filename of filenames) {
         const swarmAppConfig = yaml.load(await fs.promises.readFile(filename, "utf8"));
@@ -158,17 +158,18 @@ export async function loadSwarmAppConfig (filenames: string[], stackName: string
         throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
     }
 
-    // Add default network if not defined
-    if (extendedSwarmAppConfig.networks == null || extendedSwarmAppConfig.networks["default"] == null) {
-        extendedSwarmAppConfig.networks = extendedSwarmAppConfig.networks ?? {};
-        extendedSwarmAppConfig.networks["default"] = {
-            name: `${stackName}_default`,
+    // TODO: Download yml specified in extends and merge them.
+
+    return extendedSwarmAppConfig;
+}
+
+export function initDefaultNetwork (config: SwarmAppConfig, appName: string) {
+    if (config.networks == null || config.networks["default"] == null) {
+        config.networks = config.networks ?? {};
+        config.networks["default"] = {
+            name: `${appName}_default`,
             attachable: false,
             external: false,
         };
     }
-
-    // TODO: Download yml specified in extends and merge them.
-
-    return extendedSwarmAppConfig;
 }

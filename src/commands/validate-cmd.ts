@@ -7,10 +7,8 @@ export const description = "Validates config fileby json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
-    const stackName = args["stackName"];
-    assert(typeof stackName === "string");
     assert(Array.isArray(configFiles));
-    await loadSwarmAppConfig(configFiles, stackName);
+    await loadSwarmAppConfig(configFiles);
     console.log("Configuration file is valid");
 }
 

@@ -37,6 +37,10 @@ export class HashedConfigs {
         map.forEach((v, k) => unique.push({hash: k, content: v}));
         return unique;
     }
+
+    exists (hash: string) {
+        return this.list.find(c => c.hash === hash) != null;
+    }
 }
 
 export async function initHashedConfigs (config: SwarmAppConfig) {
