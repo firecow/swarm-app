@@ -11,14 +11,11 @@ jobs:
 
   tsc:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
       - run: npx tsc
@@ -26,28 +23,22 @@ jobs:
 
   eslint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
       - run: npx eslint .
 
 #  jest:
 #    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        node-version: [18.x, 20.x]
 #    steps:
 #      - uses: actions/checkout@v3
 #      - uses: actions/setup-node@v3
 #        with:
-#          node-version: ${{ matrix.node-version }}
+#          node-version: 18
 #          cache: 'npm'
 #      - run: npm ci --no-audit --no-fund
 #      - run: npm run build
