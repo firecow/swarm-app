@@ -8,7 +8,7 @@ import Dockerode from "dockerode";
 import {Current, getCurrent} from "../docker-api.js";
 
 export const command = "deploy <app-name>";
-export const description = "Deploys config to swarm cluster";
+export const description = "Deploys swarm app";
 
 export async function createMissingNetworks (dockerode: Docker, currentSwarm: Current, config: SwarmAppConfig, appName: string) {
     if (!config.networks) return;

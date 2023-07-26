@@ -3,7 +3,7 @@ import assert from "assert";
 import {initDefaultNetwork, loadSwarmAppConfig} from "../swarm-app-config.js";
 
 export const command = "diff <app-name>";
-export const description = "Show differences between cluster and config";
+export const description = "Show diff between current and config";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];

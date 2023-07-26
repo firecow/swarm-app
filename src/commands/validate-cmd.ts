@@ -3,7 +3,7 @@ import assert from "assert";
 import {loadSwarmAppConfig} from "../swarm-app-config.js";
 
 export const command = "validate";
-export const description = "Validates config fileby json schema";
+export const description = "Validates config file by json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
