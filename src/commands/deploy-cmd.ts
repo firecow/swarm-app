@@ -86,6 +86,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
                 Labels: {"com.docker.stack.namespace": appName, ...serviceConfig.container_labels},
                 Env: Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`),
                 StopSignal: serviceConfig.stop_signal,
+                StopGracePeriod: serviceConfig.stop_grace_period,
                 Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {
                     return {
                         File: {Name: targetPath, UID: "0", GID: "0", Mode: undefined},

@@ -28,6 +28,7 @@ services:
       - default
     replicas: 2
     stop_signal: SIGQUIT
+    stop_grace_period: 10
     placement:
       max_replicas_per_node: 2
       constraints:

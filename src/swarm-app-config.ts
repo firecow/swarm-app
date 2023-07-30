@@ -28,6 +28,7 @@ export interface SwarmAppServiceConfig {
     networks?: string[];
     replicas?: number;
     stop_signal?: "SIGTERM" | "SIGQUIT";
+    stop_grace_period?: number;
     placement?: {
         max_replicas_per_node?: number;
         constraints?: string[];
@@ -85,6 +86,7 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                     },
                     replicas: {type: "int32"},
                     stop_signal: {enum: ["SIGTERM", "SIGQUIT"]},
+                    stop_grace_period: {type: "int32"},
                     placement: {
                         optionalProperties: {
                             max_replicas_per_node: {type: "int32"},
