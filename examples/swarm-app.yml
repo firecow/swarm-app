@@ -15,8 +15,7 @@ services:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
-        # TODO: Rename to source: instead of file:
-        file: 'examples/nginx.conf'
+        sourceFile: 'examples/nginx.conf'
       /etc/nginx/conf.d/default.conf:
         content: |
           server {

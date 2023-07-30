@@ -48,15 +48,15 @@ export async function initHashedConfigs (config: SwarmAppConfig) {
     for (const [serviceName, s] of Object.entries(config.services)) {
         if (!s.configs) continue;
         for (const [targetPath, c] of Object.entries(s.configs)) {
+            let content;
             if (c.content) {
-                const content = c.content;
-                hashedConfigs.add(new HashedConfig(targetPath, content, serviceName));
-            } else if (c.file) {
-                const content = await fs.promises.readFile(c.file, "utf-8");
-                hashedConfigs.add(new HashedConfig(targetPath, content, serviceName));
+                content = c.content;
+            } else if (c.sourceFile) {
+                content = await fs.promises.readFile(c.sourceFile, "utf-8");
             } else {
                 throw new AssertionError({message: `config ${targetPath} missing content or file field`});
             }
+            hashedConfigs.add(new HashedConfig(targetPath, content, serviceName));
         }
     }
     return hashedConfigs;
