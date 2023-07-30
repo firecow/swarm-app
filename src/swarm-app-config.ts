@@ -16,10 +16,10 @@ export interface SwarmAppNetworkConfig {
 export interface SwarmAppServiceConfig {
     extends?: {file: string; name: string}[];
     image?: string;
-    labels?: Record<string, string>;
+    service_labels?: Record<string, string>;
     command?: string[];
     entrypoint?: string[];
-    containerLabels?: Record<string, string>;
+    container_labels?: Record<string, string>;
     configs?: Record<string, {
         sourceFile?: string;
         content?: string;
@@ -67,10 +67,10 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                         },
                     },
                     image: {type: "string"},
-                    labels: {values: {type: "string"}},
+                    service_labels: {values: {type: "string"}},
                     command: {elements: {type: "string"}},
                     entrypoint: {elements: {type: "string"}},
-                    containerLabels: {values: {type: "string"}},
+                    container_labels: {values: {type: "string"}},
                     configs: {
                         values: {
                             optionalProperties: {

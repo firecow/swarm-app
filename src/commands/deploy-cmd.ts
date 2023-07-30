@@ -78,12 +78,12 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
 
         version: 0,
         Name: `${appName}_${serviceName}`,
-        Labels: {"com.docker.stack.namespace": appName},
+        Labels: {"com.docker.stack.namespace": appName, ...serviceConfig.service_labels},
         TaskTemplate: {
             ContainerSpec: {
                 Image: serviceConfig.image,
                 Command: serviceConfig.command,
-                Labels: serviceConfig.containerLabels,
+                Labels: {"com.docker.stack.namespace": appName, ...serviceConfig.container_labels},
                 Env: Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`),
                 StopSignal: serviceConfig.stop_signal,
                 Configs: hashedConfigs.service(serviceName).map(({targetPath, hash}) => {

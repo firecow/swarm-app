@@ -9,9 +9,7 @@ services:
 
   nginx:
     image: nginx
-    # TODO: Rename to container_labels
-    # TODO: Implement service_labels
-    labels:
+    container_labels:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
@@ -43,4 +41,5 @@ services:
       /etc/nginx/:
         source: "web-data"
         type: "volume" # bind
+        # type: "bind"
         readonly: true
