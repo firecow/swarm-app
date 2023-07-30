@@ -8,6 +8,7 @@ networks:
 services:
 
   nginx:
+    command: ["nginx", "-g", "daemon off;"]
     image: nginx
     container_labels:
       org.company.country: england
