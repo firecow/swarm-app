@@ -5,9 +5,9 @@ function searchLast (str: string, rgx: RegExp) {
     return matches.length > 0 ? matches.slice(-1)[0].index : -1;
 }
 
-export function parseEnvFile (src: string): {[key: string]: string} {
+export function parseEnvFile (src: string): Record<string, string> {
     const regExp = /^\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?$/mg;
-    const obj: {[key: string]: string} = {};
+    const obj: Record<string, string> = {};
     const lines = src.replace(/\r\n?/mg, "\n");
 
     let match;
@@ -39,7 +39,7 @@ export function parseEnvFile (src: string): {[key: string]: string} {
     return obj;
 }
 
-export function envsubst (value: string, env: {[key: string]: string | undefined}): string {
+export function envsubst (value: string, env: Record<string, string>): string {
     const lastIndexOf = searchLast(value, /(?!(?<=\\))\$/g);
 
     if (lastIndexOf === -1) return value;
