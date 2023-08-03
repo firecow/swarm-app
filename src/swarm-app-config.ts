@@ -5,7 +5,7 @@ import justExtend from "just-extend";
 import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
 import Ajv from "ajv/dist/jtd.js";
 import traverse from "traverse";
-import envsubst from "./envsubst.js";
+import {envsubst, parseEnvFile} from "./envsubst.js";
 
 export interface SwarmAppNetworkConfig {
     attachable: boolean;
@@ -25,6 +25,7 @@ export interface SwarmAppServiceConfig {
         content?: string;
     }>;
     environment?: Record<string, string>;
+    env_file?: string;
     networks?: string[];
     replicas?: number;
     stop_signal?: "SIGTERM" | "SIGQUIT";
@@ -81,6 +82,7 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                         },
                     },
                     environment: {values: {type: "string"}},
+                    env_file: {type: "string"},
                     networks: {
                         elements: {type: "string"},
                     },
@@ -148,17 +150,32 @@ export async function loadSwarmAppConfig (filenames: string[]) {
         extendedSwarmAppConfig = justExtend(true, extendedSwarmAppConfig, swarmAppConfig);
     }
 
-    // Envsubst all fields
-    traverse(extendedSwarmAppConfig).forEach(function (v) {
-        if (typeof v !== "string") return;
-        this.update(envsubst(v, process.env));
-    });
-
     // Validate json schema
     const validate = new Ajv().compile(swarmAppConfigSchema);
     if (!validate(extendedSwarmAppConfig)) {
         throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
     }
+
+    // Expand envFile to environment
+    for (const s of Object.values(extendedSwarmAppConfig.services)) {
+        if (!s.env_file) continue;
+        const envFileCnt = await fs.promises.readFile(s.env_file, "utf8");
+        s.environment = {...s.environment, ...parseEnvFile(envFileCnt)};
+    }
+
+    // Envsubst all string values
+    const services = extendedSwarmAppConfig.services;
+    traverse(extendedSwarmAppConfig).forEach(function (v) {
+        if (typeof v !== "string") return;
+
+        const service = services[this.path[1]];
+        let serviceEnvironment = {};
+        if (this.path[0] === "services" && service?.environment) {
+            serviceEnvironment = service.environment;
+        }
+
+        this.update(envsubst(v, {...process.env, ...serviceEnvironment}));
+    });
 
     // TODO: Download yml specified in extends and merge them.
 

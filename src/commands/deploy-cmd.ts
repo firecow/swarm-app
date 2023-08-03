@@ -73,9 +73,6 @@ interface InitServiceSpecOpts {
 export function initServiceSpec ({appName, serviceName, config, hashedConfigs, current}: InitServiceSpecOpts) {
     const serviceConfig = config.services[serviceName];
     return {
-        // TODO: Create needed mounts from service.mounts and use them in container spec.
-        // TODO: Going from replicated to global and vice versa, no problem.
-
         version: 0,
         Name: `${appName}_${serviceName}`,
         Labels: {"com.docker.stack.namespace": appName, ...serviceConfig.service_labels},

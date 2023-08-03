@@ -18,16 +18,21 @@ services:
       /etc/nginx/conf.d/default.conf:
         content: |
           server {
-            location / {
+            location ${NGINX_LOCATION} {
               root ${NGINX_FOLDER};
             }
+            location /api {
+              default_type application/json;
+              return 200 '{"status":"success"}';
+            }
           }
-    # TODO: Implement env_file
+    env_file: examples/.env
     environment:
-      NGINX_FOLDER: html
+      NGINX_FOLDER: /usr/share/nginx/html/
     networks:
       - default
     replicas: 2
+    # TODO: Implement replicated and global, support changing between em.
     stop_signal: SIGQUIT
     stop_grace_period: 10
     placement:
@@ -39,9 +44,10 @@ services:
         - protocol: tcp
           published: 8080
           target: 80
+    # TODO: Implement mounts
     mounts:
       /etc/nginx/:
         source: "web-data"
-        type: "volume" # bind
+        type: "volume"
         # type: "bind"
         readonly: true
