@@ -1,18 +1,17 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
-import assert from "assert";
-import {initDefaultNetwork, loadSwarmAppConfig} from "../swarm-app-config.js";
+import {expandSwarmAppConfig, loadSwarmAppConfig} from "../swarm-app-config.js";
+import {assertArray, assertString} from "../asserts.js";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
+    assertArray(configFiles, assertString);
     const appName = args["appName"];
-    assert(typeof appName === "string");
-    assert(Array.isArray(configFiles));
+    assertString(appName);
     const config = await loadSwarmAppConfig(configFiles);
-    initDefaultNetwork(config, appName);
-
+    await expandSwarmAppConfig(config, appName);
     // TODO: Implement
     console.log("swarm-app diff not implemented yet");
 }
@@ -29,5 +28,7 @@ export function builder (yargs: Argv) {
         default: ["swarm-app.yml"],
         alias: "f",
     });
+    yargs.hide("help");
+    yargs.hide("version");
     return yargs;
 }

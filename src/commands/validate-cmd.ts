@@ -1,13 +1,13 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
-import assert from "assert";
 import {loadSwarmAppConfig} from "../swarm-app-config.js";
+import {assertArray, assertString} from "../asserts.js";
 
 export const command = "validate";
 export const description = "Validates config file by json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
-    assert(Array.isArray(configFiles));
+    assertArray(configFiles, assertString);
     await loadSwarmAppConfig(configFiles);
     console.log("Configuration file is valid");
 }
@@ -20,5 +20,7 @@ export function builder (yargs: Argv) {
         default: ["swarm-app.yml"],
         alias: "f",
     });
+    yargs.hide("help");
+    yargs.hide("version");
     return yargs;
 }

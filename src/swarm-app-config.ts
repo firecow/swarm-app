@@ -156,16 +156,32 @@ export async function loadSwarmAppConfig (filenames: string[]) {
         throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
     }
 
+    return extendedSwarmAppConfig;
+}
+
+export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appName: string) {
+    // TODO: Download yml specified in service.extends and merge them.
+
+    // Create default network block if it's missing.
+    if (swarmAppConfig.networks == null || swarmAppConfig.networks["default"] == null) {
+        swarmAppConfig.networks = swarmAppConfig.networks ?? {};
+        swarmAppConfig.networks["default"] = {
+            name: `${appName}_default`,
+            attachable: false,
+            external: false,
+        };
+    }
+
     // Expand envFile to environment
-    for (const s of Object.values(extendedSwarmAppConfig.services)) {
+    for (const s of Object.values(swarmAppConfig.services)) {
         if (!s.env_file) continue;
         const envFileCnt = await fs.promises.readFile(s.env_file, "utf8");
         s.environment = {...s.environment, ...parseEnvFile(envFileCnt)};
     }
 
     // Envsubst all string values
-    const services = extendedSwarmAppConfig.services;
-    traverse(extendedSwarmAppConfig).forEach(function (v) {
+    const services = swarmAppConfig.services;
+    traverse(swarmAppConfig).forEach(function (v) {
         if (typeof v !== "string") return;
 
         const service = services[this.path[1]];
@@ -176,19 +192,4 @@ export async function loadSwarmAppConfig (filenames: string[]) {
 
         this.update(envsubst(v, {...process.env, ...serviceEnvironment}));
     });
-
-    // TODO: Download yml specified in extends and merge them.
-
-    return extendedSwarmAppConfig;
-}
-
-export function initDefaultNetwork (config: SwarmAppConfig, appName: string) {
-    if (config.networks == null || config.networks["default"] == null) {
-        config.networks = config.networks ?? {};
-        config.networks["default"] = {
-            name: `${appName}_default`,
-            attachable: false,
-            external: false,
-        };
-    }
 }

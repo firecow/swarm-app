@@ -1,11 +1,12 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import assert from "assert";
-import {SwarmAppConfig, loadSwarmAppConfig, initDefaultNetwork, SwarmAppServiceConfig} from "../swarm-app-config.js";
+import {SwarmAppConfig, loadSwarmAppConfig, SwarmAppServiceConfig, expandSwarmAppConfig} from "../swarm-app-config.js";
 import Docker, {ConfigInfo} from "dockerode";
 import {HashedConfigs, initHashedConfigs} from "../hashed-config.js";
 import timers from "timers/promises";
 import Dockerode from "dockerode";
 import {Current, getCurrent} from "../docker-api.js";
+import {assertArray, assertString} from "../asserts.js";
 
 export const command = "deploy <app-name>";
 export const description = "Deploys swarm app";
@@ -37,6 +38,7 @@ export async function createMissingConfigs (dockerode: Docker, currentConfigs: C
             Data: Buffer.from(h.content).toString("base64"),
         };
         const {id} = await dockerode.createConfig(spec);
+        assertString(id);
         newConfigs.push({ID: id, Spec: spec, CreatedAt: "", UpdatedAt: "", Version: {Index: 0}});
     }
     return newConfigs;
@@ -139,11 +141,12 @@ export async function upsertServices ({dockerode, config, current, appName, hash
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
+    assertArray(configFiles, assertString);
     const appName = args["appName"];
-    assert(typeof appName === "string");
-    assert(Array.isArray(configFiles));
+    assertString(appName);
+
     const config = await loadSwarmAppConfig(configFiles);
-    initDefaultNetwork(config, appName);
+    await expandSwarmAppConfig(config, appName);
 
     const dockerode = new Docker();
     const current = await getCurrent({dockerode, appName});
@@ -169,5 +172,7 @@ export function builder (yargs: Argv) {
         default: ["swarm-app.yml"],
         alias: "f",
     });
+    yargs.hide("help");
+    yargs.hide("version");
     return yargs;
 }

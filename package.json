@@ -20,6 +20,7 @@
     "@types/dockerode": "3.x",
     "@types/js-yaml": "4.x",
     "@types/node": "20.x",
+    "@types/source-map-support": "0.5.x",
     "@types/traverse": "0.6.x",
     "@typescript-eslint/eslint-plugin": "6.x",
     "@typescript-eslint/parser": "6.x",
@@ -67,6 +68,9 @@
         "error",
         4
       ],
+      "@typescript-eslint/no-unsafe-call": "error",
+      "@typescript-eslint/no-unsafe-member-access": "error",
+      "@typescript-eslint/no-unsafe-argument": "error",
       "@typescript-eslint/space-before-blocks": "error",
       "@typescript-eslint/type-annotation-spacing": "error",
       "@typescript-eslint/func-call-spacing": "error",
