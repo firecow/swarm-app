@@ -3,28 +3,18 @@ Deploy application stacks to docker swarm in a controlled manner.
 
 # Why?
 
-## Certain things are hard to redeploy 
+- Updating swarm config's used to be a pain, but not anymore.
+- docker-compose.yml wasn't designed to docker swarm services, swarm-app.yml is.
+- Go from `replicated` to `global` mode without manually remove services.
+- `swarm-app.yml` is very explicit, no more optionals, no more short syntax.
 
-Updating swarm config's used to be a pain, but not anymore.
+## CLI improvements
+- `swarm-app validate` will exit on basic configuration file mistakes.
+- `swarm-app diff` gives a proper diff like overview pre-deployment.
+- `swarm-app wait` waits for deployment to finish, and outputs reconciliation status.
 
-Going from `replicated` to `global` and vice versa, no problem.
-
-## What will happen?
-`swarm-app diff` gives a proper overview.
-
-## Was deployment succesful?
-`swarm-app wait` gives a detailed answer.
-
-## Getting deployment errors tools could have found?
-`swarm-app validate` will exit with errors on configuration mistake.
-
-## Confused looking at the yaml?
-`swarm-app.yml` is very explicit, no more optionals, no more short syntax.
-
-swarm-app config isn't docker-compose or docker stack, but it does borrow the good parts.
-
-## Duplicated yaml across multiple project?
-Extends from external source is here to help.
+## Config file improvements 
+### Extends from external sources.
 ```yml
 services:
   mywebserver:
@@ -32,9 +22,7 @@ services:
       - { file: https://swarm-app.firecow.dk/1.0.0/general.yml, service: nginx }
 ```
 
-## Do I really need source files for configs?
-Nope, you can just inline them, they even get envsubst'ed.
-Escape with double dollar.
+### Inline swarm configs with envsubst
 ```sh
 export NGINX_FOLDER=html
 ```
