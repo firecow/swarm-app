@@ -24,7 +24,7 @@ export class HashedConfigs {
         this.list.push(hashedConfig);
     }
 
-    service (serviceName: string): {targetPath: string; hash: string}[] {
+    filterByServiceName (serviceName: string): {targetPath: string; hash: string}[] {
         const service: {targetPath: string; hash: string}[] = [];
         this.list.filter(l => l.serviceName === serviceName).forEach(({targetPath, hash}) => service.push({targetPath, hash}));
         return service;
