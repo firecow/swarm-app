@@ -5,13 +5,13 @@ Deploy application stacks to docker swarm in a controlled manner.
 
 - Updating swarm config's used to be a pain, but not anymore.
 - docker-compose.yml wasn't designed to docker swarm services, swarm-app.yml is.
-- Go from `replicated` to `global` mode without manually remove services.
+- Go from `replicated` to `global` mode without manually removing services.
 - `swarm-app.yml` is very explicit, no more optionals, no more short syntax.
 
 ## CLI improvements
 - `swarm-app validate` will exit on basic configuration file mistakes.
-- `swarm-app diff` gives a proper diff like overview pre-deployment.
-- `swarm-app wait` waits for deployment to finish, and outputs reconciliation status.
+- `swarm-app diff` gives a proper diff like overview of what you are about to deploy.
+- `swarm-app wait` waits for deployment to reconcile, and outputs status.
 
 ## Config file improvements 
 ### Extends from external sources.

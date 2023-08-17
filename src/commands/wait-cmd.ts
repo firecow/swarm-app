@@ -53,7 +53,7 @@ export function builder (yargs: Argv) {
     });
     yargs.option("timeout", {
         type: "number",
-        description: "Milliseconds to wait for successful tasks reconciliation",
+        description: "Milliseconds to wait for successful reconciliation",
         demandOption: false,
         default: 30000,
         alias: "t",
