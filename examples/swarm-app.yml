@@ -14,19 +14,19 @@ services:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
-        sourceFile: 'examples/nginx.conf'
+        sourceFile: 'nginx.conf'
       /etc/nginx/conf.d/default.conf:
         content: |
           server {
             location ${NGINX_LOCATION} {
               root ${NGINX_FOLDER};
             }
-            location /api {
+            location /status {
               default_type application/json;
               return 200 '{"status":"success"}';
             }
           }
-    env_file: examples/.env
+    env_file: .env
     environment:
       NGINX_FOLDER: /usr/share/nginx/html/
     networks:
