@@ -35,7 +35,10 @@ export async function handler (args: ArgumentsCamelCase) {
     let tasks: {ServiceID: string; Slot: number; Status: {State: string; Message: string}; DesiredState: string}[];
     do {
         tasks = await dockerode.listTasks({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
-        reconciled = tasks.every(t => t.Status.State === t.DesiredState);
+        reconciled = tasks.every(t => {
+            if (t.Status.State === "complete") return true;
+            return t.Status.State === t.DesiredState;
+        });
         if (!reconciled) {
             await timers.setTimeout(intervalInMs);
         }
