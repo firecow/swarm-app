@@ -7,9 +7,8 @@ import * as deployCommand from "./commands/deploy-cmd.js";
 import * as waitCommand from "./commands/wait-cmd.js";
 
 process.on("uncaughtException", (err) => {
-    console.log(err.name, err.cause);
     if (err instanceof assert.AssertionError) {
-        console.error(`\x1b[31m${err.message}\x1b[0m`);
+        console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 6).join("\n")}\x1b[0m`);
     } else {
         console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 4).join("\n")}\x1b[0m`);
     }

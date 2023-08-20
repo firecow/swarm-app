@@ -177,6 +177,7 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
         if (!s.env_file) continue;
         const envFileCnt = await fs.promises.readFile(s.env_file, "utf8");
         s.environment = {...s.environment, ...parseEnvFile(envFileCnt)};
+        delete s.env_file;
     }
 
     // Envsubst all string values
@@ -192,4 +193,14 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
 
         this.update(envsubst(v, {...process.env, ...serviceEnvironment}));
     });
+
+    // Ensure com.docker.stack.namespace labels
+    for (const service of Object.values(swarmAppConfig.services)) {
+        if (service.service_labels) {
+            service.service_labels["com.docker.stack.namespace"] = appName;
+        }
+        if (service.container_labels) {
+            service.container_labels["com.docker.stack.namespace"] = appName;
+        }
+    }
 }
