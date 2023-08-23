@@ -196,11 +196,9 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
 
     // Ensure com.docker.stack.namespace labels
     for (const service of Object.values(swarmAppConfig.services)) {
-        if (service.service_labels) {
-            service.service_labels["com.docker.stack.namespace"] = appName;
-        }
-        if (service.container_labels) {
-            service.container_labels["com.docker.stack.namespace"] = appName;
-        }
+        service.service_labels = service.service_labels ?? {};
+        service.service_labels["com.docker.stack.namespace"] = appName;
+        service.container_labels = service.container_labels ?? {};
+        service.container_labels["com.docker.stack.namespace"] = appName;
     }
 }
