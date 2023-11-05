@@ -13,6 +13,12 @@ export interface SwarmAppNetworkConfig {
     name: string;
 }
 
+export interface SwarmAppEndpointSpecPort {
+    protocol?: "tcp" | "udp" | "sctp";
+    published: number;
+    target: number;
+}
+
 export interface SwarmAppServiceConfig {
     extends?: {file: string; name: string}[];
     image?: string;
@@ -36,11 +42,7 @@ export interface SwarmAppServiceConfig {
         preferences?: {spread: string}[];
     };
     endpoint_spec?: {
-        ports: {
-            protocol?: "tcp" | "udp";
-            published: number;
-            target: number;
-        }[];
+        ports: SwarmAppEndpointSpecPort[];
     };
     mounts?: Record<string, {
         source: string;
@@ -111,7 +113,7 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                                         target: {type: "int16"},
                                     },
                                     optionalProperties: {
-                                        protocol: {enum: ["tcp", "udp"]},
+                                        protocol: {enum: ["tcp", "udp", "sctp"]},
                                     },
                                 },
                             },
