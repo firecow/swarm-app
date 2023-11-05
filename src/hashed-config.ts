@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import {SwarmAppConfig} from "./swarm-app-config.js";
 import fs from "fs";
-import {AssertionError} from "assert";
+import assert, {AssertionError} from "assert";
 
 export class HashedConfig {
 
@@ -28,6 +28,12 @@ export class HashedConfigs {
         const service: {targetPath: string; hash: string}[] = [];
         this.list.filter(l => l.serviceName === serviceName).forEach(({targetPath, hash}) => service.push({targetPath, hash}));
         return service;
+    }
+
+    find (serviceName: string, targetPath: string): HashedConfig {
+        const found = this.list.find(l => l.serviceName === serviceName && l.targetPath === targetPath);
+        assert(found != null, `Could not find hashed config ${serviceName} ${targetPath}`);
+        return found;
     }
 
     unique (): {hash: string; content: string}[] {
