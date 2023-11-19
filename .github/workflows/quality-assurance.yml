@@ -41,4 +41,5 @@ jobs:
           node-version: 18
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
+      - run: npx tsc
       - run: npm test
