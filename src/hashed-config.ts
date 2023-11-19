@@ -7,7 +7,7 @@ export class HashedConfig {
 
     public readonly hash: string;
 
-    constructor (
+    public constructor (
         public readonly targetPath: string,
         public readonly content: string,
         public readonly serviceName: string,
@@ -20,23 +20,23 @@ export class HashedConfigs {
 
     private list: HashedConfig[] = [];
 
-    add (hashedConfig: HashedConfig) {
+    public add (hashedConfig: HashedConfig) {
         this.list.push(hashedConfig);
     }
 
-    filterByServiceName (serviceName: string): {targetPath: string; hash: string}[] {
+    public filterByServiceName (serviceName: string): {targetPath: string; hash: string}[] {
         const service: {targetPath: string; hash: string}[] = [];
         this.list.filter(l => l.serviceName === serviceName).forEach(({targetPath, hash}) => service.push({targetPath, hash}));
         return service;
     }
 
-    find (serviceName: string, targetPath: string): HashedConfig {
+    public find (serviceName: string, targetPath: string): HashedConfig {
         const found = this.list.find(l => l.serviceName === serviceName && l.targetPath === targetPath);
         assert(found != null, `Could not find hashed config ${serviceName} ${targetPath}`);
         return found;
     }
 
-    unique (): {hash: string; content: string}[] {
+    public unique (): {hash: string; content: string}[] {
         const map = new Map<string, string>();
         const unique: {hash: string; content: string}[] = [];
         this.list.forEach((c) => map.set(c.hash, c.content));
@@ -44,7 +44,7 @@ export class HashedConfigs {
         return unique;
     }
 
-    exists (hash: string) {
+    public exists (hash: string) {
         return this.list.find(c => c.hash === hash) != null;
     }
 }

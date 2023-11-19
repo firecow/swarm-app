@@ -10,13 +10,15 @@
   "dependencies": {
     "ajv": "8.x",
     "dockerode": "4.x",
+    "jest-diff": "29.x",
     "js-yaml": "4.x",
-    "just-extend": "6.x.x",
+    "just-extend": "6.x",
     "source-map-support": "0.5.x",
     "traverse": "0.6.x",
     "yargs": "17.x"
   },
   "devDependencies": {
+    "@jest/globals": "29.x",
     "@types/dockerode": "3.x",
     "@types/js-yaml": "4.x",
     "@types/node": "20.x",
@@ -57,6 +59,9 @@
       "@typescript-eslint/space-before-function-paren": "error",
       "@typescript-eslint/member-delimiter-style": "error",
       "@typescript-eslint/semi": "error",
+      "@typescript-eslint/prefer-optional-chain": "error",
+      "@typescript-eslint/no-extra-parens": "error",
+      "@typescript-eslint/explicit-member-accessibility": "error",
       "@typescript-eslint/comma-dangle": [
         "error",
         "always-multiline"
@@ -88,7 +93,8 @@
       "no-trailing-spaces": "error",
       "no-multi-spaces": "error",
       "arrow-spacing": "error",
-      "key-spacing": "error"
+      "key-spacing": "error",
+      "eol-last": "error"
     }
   },
   "jest": {

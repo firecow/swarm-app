@@ -46,7 +46,7 @@ export interface SwarmAppServiceConfig {
     };
     mounts?: Record<string, {
         source: string;
-        type: "volume" | "bind";
+        type: "bind" | "volume";
         readonly: boolean;
     }>;
 }
@@ -165,9 +165,9 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
     // TODO: Download yml specified in service.extends and merge them.
 
     // Create default network block if it's missing.
-    if (swarmAppConfig.networks == null || swarmAppConfig.networks["default"] == null) {
+    if (swarmAppConfig.networks?.default == null) {
         swarmAppConfig.networks = swarmAppConfig.networks ?? {};
-        swarmAppConfig.networks["default"] = {
+        swarmAppConfig.networks.default = {
             name: `${appName}_default`,
             attachable: false,
             external: false,
@@ -189,7 +189,7 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
 
         const service = services[this.path[1]];
         let serviceEnvironment = {};
-        if (this.path[0] === "services" && service?.environment) {
+        if (this.path[0] === "services" && service.environment) {
             serviceEnvironment = service.environment;
         }
 

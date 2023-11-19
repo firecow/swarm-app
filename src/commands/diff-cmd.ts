@@ -1,19 +1,60 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
-import {expandSwarmAppConfig, loadSwarmAppConfig} from "../swarm-app-config.js";
-import {assertArray, assertString} from "../asserts.js";
+import {SwarmAppConfig} from "../swarm-app-config.js";
+import {DockerResources} from "../docker-api.js";
+import {ServiceSpec} from "dockerode";
+import {diffStringsUnified} from "jest-diff";
+import yaml from "js-yaml";
+import {initServiceSpec} from "../service-spec.js";
+import {HashedConfigs} from "../hashed-config.js";
+import {initContext} from "../context.js";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
 
+function serviceNameCompare (a: {Name?: string} | undefined, b: {Name?: string} | undefined) {
+    if (!a?.Name) return 0;
+    if (!b?.Name) return 0;
+    return a.Name.localeCompare(b.Name);
+}
+
+interface InitServiceResourcesOpt {
+    appName: string;
+    config: SwarmAppConfig;
+    hashedConfigs: HashedConfigs;
+    current: DockerResources;
+}
+
+function initServiceResources ({appName, config, hashedConfigs, current}: InitServiceResourcesOpt): ServiceSpec[] {
+    const serviceSpecs: ServiceSpec[] = [];
+    for (const serviceName of Object.keys(config.services)) {
+        const serviceSpec = initServiceSpec({appName, serviceName, config, hashedConfigs, current});
+        delete serviceSpec.version;
+        serviceSpecs.push(serviceSpec);
+    }
+    return serviceSpecs.sort(serviceNameCompare);
+}
+
 export async function handler (args: ArgumentsCamelCase) {
-    const configFiles = args["configFile"];
-    assertArray(configFiles, assertString);
-    const appName = args["appName"];
-    assertString(appName);
-    const config = await loadSwarmAppConfig(configFiles);
-    await expandSwarmAppConfig(config, appName);
-    // TODO: Implement
-    console.log("swarm-app diff not implemented yet");
+    const ctx = await initContext(args);
+
+    const lhs: {services: (ServiceSpec | undefined)[]} = {
+        services: ctx.current.services.map(s => s.Spec).sort(serviceNameCompare),
+    };
+    const rhs: {services: ServiceSpec[]} = {
+        services: initServiceResources(ctx),
+    };
+
+    const lhsTxt = yaml.dump(lhs);
+    const rhsTxt = yaml.dump(rhs);
+    const red = (str: string) => `\x1b[31m${str}\x1b[0m`;
+    const green = (str: string) => `\x1b[32m${str}\x1b[0m`;
+    const comparison = diffStringsUnified(lhsTxt, rhsTxt, {
+        omitAnnotationLines: true,
+        expand: true,
+        aColor: red,
+        bColor: green,
+    });
+    console.log(comparison);
 }
 
 export function builder (yargs: Argv) {
