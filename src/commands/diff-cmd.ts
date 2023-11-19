@@ -46,10 +46,7 @@ export async function handler (args: ArgumentsCamelCase) {
     };
 
     const lhsTxt = yaml.dump(lhs);
-    await fs.promises.writeFile("lhs.yml", lhsTxt);
     const rhsTxt = yaml.dump(rhs);
-    await fs.promises.writeFile("rhs.yml", rhsTxt);
-
     const red = (str: string) => `\x1b[31m${str}\x1b[0m`;
     const green = (str: string) => `\x1b[32m${str}\x1b[0m`;
     const comparison = diffStringsUnified(lhsTxt, rhsTxt, {
@@ -57,7 +54,6 @@ export async function handler (args: ArgumentsCamelCase) {
         expand: true,
         aColor: red,
         bColor: green,
-        // changeColor: noColor,
     });
     console.log(comparison);
 }
