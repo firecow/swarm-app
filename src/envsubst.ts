@@ -15,7 +15,7 @@ export function parseEnvFile (src: string): Record<string, string> {
         const key = match[1];
 
         // Default undefined or null to empty string
-        let value = (match[2] || "");
+        let value = match[2] || "";
 
         // Remove whitespace
         value = value.trim();
@@ -45,7 +45,7 @@ export function envsubst (value: string, env: Record<string, string>): string {
     if (lastIndexOf === -1) return value;
     const lastGroup = value.slice(lastIndexOf);
     const matchGroup = /((?!(?<=\\))\${?(\w+)(?::-([^}\\]*))?}?)/;
-    const match = lastGroup.match(matchGroup);
+    const match = matchGroup.exec(lastGroup);
 
     if (match != null) {
         const [, group, varName, defaultValue] = match;

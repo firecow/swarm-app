@@ -3,3 +3,5 @@
 /node_modules/
 **/*.js
 *.sh
+examples/lhs.yml
+examples/rhs.yml
