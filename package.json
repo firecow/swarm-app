@@ -93,7 +93,8 @@
       "no-trailing-spaces": "error",
       "no-multi-spaces": "error",
       "arrow-spacing": "error",
-      "key-spacing": "error"
+      "key-spacing": "error",
+      "eol-last": "error"
     }
   },
   "jest": {

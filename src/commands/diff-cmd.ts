@@ -3,7 +3,6 @@ import {SwarmAppConfig} from "../swarm-app-config.js";
 import {DockerResources} from "../docker-api.js";
 import {ServiceSpec} from "dockerode";
 import {diffStringsUnified} from "jest-diff";
-import fs from "fs";
 import yaml from "js-yaml";
 import {initServiceSpec} from "../service-spec.js";
 import {HashedConfigs} from "../hashed-config.js";
