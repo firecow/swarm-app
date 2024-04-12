@@ -5,5 +5,11 @@
     ":disableDependencyDashboard",
     ":maintainLockFilesWeekly"
   ],
-  "recreateWhen": "always"
+  "recreateWhen": "always",
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "lockFileMaintenance"],
+      "groupName": "All non-major"
+    }
+  ]
 }
