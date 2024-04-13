@@ -80,14 +80,12 @@ interface RemoveUnusedConfigsOpts {
     current: DockerResources;
     hashedConfigs: HashedConfigs;
 }
-export async function removeUnusedConfigs ({current, hashedConfigs}: RemoveUnusedConfigsOpts) {
+export async function removeUnusedConfigs ({dockerode, current, hashedConfigs}: RemoveUnusedConfigsOpts) {
     for (const c of current.configs) {
         if (!c.Spec) continue;
         if (hashedConfigs.exists(c.Spec.Name)) continue;
-        // TODO: https://github.com/apocas/dockerode/issues/739
-        // await dockerode.getConfig(c.ID).remove();
+        await dockerode.getConfig(c.ID).remove();
         await timers.setTimeout(0);
-        console.log(`Should remove config (${c.Spec.Name}) here, but https://github.com/apocas/dockerode/issues/739`);
     }
 }
 
