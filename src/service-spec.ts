@@ -73,8 +73,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
                 assert(config.networks[networkKey].name != null, `config.networks[${networkKey}].name cannot be empty here`);
                 const networkName = config.networks[networkKey].name;
                 const foundNetwork = current?.networks.find(n => n.Name === networkName);
-                assert(foundNetwork != null, `config.networks[${networkKey}].name could not be found, it should have been created`);
-                return {Target: foundNetwork.Id};
+                return {Target: foundNetwork?.Id};
             }),
             ForceUpdate: 0,
             Runtime: "container",

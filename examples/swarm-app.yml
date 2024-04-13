@@ -4,6 +4,10 @@ networks:
     name: ${STACK_NAME}-hello
     attachable: true
     external: false
+  shared:
+    name: ${STACK_NAME}-shared
+    attachable: true
+    external: false
 
 services:
 
