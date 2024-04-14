@@ -110,6 +110,7 @@
     "collectCoverageFrom": [
       "**/*.js",
       "!src/index.js",
+      "!test/**.*.js",
       "!**/node_modules/**",
       "!**/coverage/**"
     ]
