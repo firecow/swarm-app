@@ -7,9 +7,21 @@ import yaml from "js-yaml";
 import {initServiceSpec} from "../service-spec.js";
 import {HashedConfigs} from "../hashed-config.js";
 import {initContext} from "../context.js";
+import fs from "fs/promises";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
+
+interface Lhs {
+    services: (ServiceSpec | undefined)[];
+    networks: (NetworkInspectInfo | undefined)[];
+}
+
+interface Rhs {
+    services: ServiceSpec[];
+    networks: (NetworkInspectInfo | undefined)[];
+}
+
 
 function nameCompare (a: {Name?: string} | undefined, b: {Name?: string} | undefined) {
     if (!a?.Name) return 0;
@@ -25,9 +37,9 @@ interface InitServiceResourcesOpt {
 }
 function initNetworkResources ({config, appName}: InitServiceResourcesOpt): NetworkInspectInfo[] {
     const networkInfos: NetworkInspectInfo[] = [];
-    for (const [networkName, n] of Object.entries(config.networks ?? {})) {
+    for (const n of Object.values(config.networks ?? {})) {
         networkInfos.push({
-            Name: `${appName}-${networkName}`,
+            Name: n.name,
             Id: "",
             Created: "1970-01-01T06:00:00.00000000",
             Scope: "swarm",
@@ -62,25 +74,56 @@ function initServiceResources ({appName, config, hashedConfigs, current}: InitSe
     return serviceSpecs.sort(nameCompare);
 }
 
+function stripIrrelevantFromLhs (lhs: Lhs) {
+    for (const n of lhs.networks) {
+        delete n?.IPAM?.Options;
+        delete n?.IPAM?.Config;
+        delete n?.ConfigFrom;
+        delete n?.Containers;
+        delete n?.Options;
+        if (n) {
+            n.Id = "<masked>";
+            n.Created = "<masked>";
+        }
+    }
+}
+
+function stripIrrelevantFromRhs (rhs: Rhs) {
+    for (const n of rhs.networks) {
+        if (n) {
+            n.Id = "<masked>";
+            n.Created = "<masked>";
+        }
+    }
+}
+
 export async function handler (args: ArgumentsCamelCase) {
     const ctx = await initContext(args);
 
-    const lhs: {services: (ServiceSpec | undefined)[]; networks: (NetworkInspectInfo | undefined)[]} = {
+    const lhs: Lhs = {
         networks: ctx.current.networks.sort(nameCompare),
         services: ctx.current.services.map(s => s.Spec).sort(nameCompare),
     };
-    const rhs: {services: ServiceSpec[]; networks: (NetworkInspectInfo | undefined)[]} = {
+    const rhs: Rhs = {
         networks: initNetworkResources(ctx),
         services: initServiceResources(ctx),
     };
 
+    // Strip irrelevant info from lhs and rhs
+    stripIrrelevantFromLhs(lhs);
+    stripIrrelevantFromRhs(rhs);
+
     const lhsTxt = yaml.dump(lhs);
     const rhsTxt = yaml.dump(rhs);
+    if (args["write-lhs-rhs"]) {
+        await fs.writeFile("lhs.yml", lhsTxt);
+        await fs.writeFile("rhs.yml", rhsTxt);
+    }
     const red = (str: string) => `\x1b[31m${str}\x1b[0m`;
     const green = (str: string) => `\x1b[32m${str}\x1b[0m`;
     const comparison = diffStringsUnified(lhsTxt, rhsTxt, {
         omitAnnotationLines: true,
-        expand: true,
+        expand: false,
         aColor: red,
         bColor: green,
     });
@@ -98,6 +141,13 @@ export function builder (yargs: Argv) {
         demandOption: false,
         default: ["swarm-app.yml"],
         alias: "f",
+    });
+    yargs.option("write-lhs-rhs", {
+        type: "boolean",
+        description: "Write lhs and rhs files",
+        demandOption: false,
+        default: false,
+        alias: "w",
     });
     yargs.hide("help");
     yargs.hide("version");
