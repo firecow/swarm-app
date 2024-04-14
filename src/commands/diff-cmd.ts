@@ -8,36 +8,18 @@ import {initServiceSpec} from "../service-spec.js";
 import {HashedConfigs} from "../hashed-config.js";
 import {initContext} from "../context.js";
 import fs from "fs/promises";
+import {nameCompare} from "../array.js";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
 
-interface Lhs {
-    services: (ServiceSpec | undefined)[];
-    networks: (NetworkInspectInfo | undefined)[];
-}
-
-interface Rhs {
-    services: ServiceSpec[];
-    networks: (NetworkInspectInfo | undefined)[];
-}
-
-
-function nameCompare (a: {Name?: string} | undefined, b: {Name?: string} | undefined) {
-    if (!a?.Name) return 0;
-    if (!b?.Name) return 0;
-    return a.Name.localeCompare(b.Name);
-}
-
-interface InitServiceResourcesOpt {
+interface InitNetworkResourcesOpt {
     appName: string;
     config: SwarmAppConfig;
-    hashedConfigs: HashedConfigs;
-    current: DockerResources;
 }
-function initNetworkResources ({config, appName}: InitServiceResourcesOpt): NetworkInspectInfo[] {
+function initNetworkResources ({config, appName}: InitNetworkResourcesOpt): NetworkInspectInfo[] {
     const networkInfos: NetworkInspectInfo[] = [];
-    for (const n of Object.values(config.networks ?? {})) {
+    for (const n of Object.values(config.networks ?? {}).filter(e => !e.external)) {
         networkInfos.push({
             Name: n.name,
             Id: "",
@@ -47,7 +29,7 @@ function initNetworkResources ({config, appName}: InitServiceResourcesOpt): Netw
             EnableIPv6: false,
             IPAM: {Driver: "default"},
             Internal: false,
-            Attachable: n.attachable,
+            Attachable: n.attachable ?? true,
             Ingress: false,
             ConfigOnly: false,
             Labels: {
@@ -74,6 +56,10 @@ function initServiceResources ({appName, config, hashedConfigs, current}: InitSe
     return serviceSpecs.sort(nameCompare);
 }
 
+interface Lhs {
+    services: (ServiceSpec | undefined)[];
+    networks: (NetworkInspectInfo | undefined)[];
+}
 function stripIrrelevantFromLhs (lhs: Lhs) {
     for (const n of lhs.networks) {
         delete n?.IPAM?.Options;
@@ -88,6 +74,10 @@ function stripIrrelevantFromLhs (lhs: Lhs) {
     }
 }
 
+interface Rhs {
+    services: ServiceSpec[];
+    networks: (NetworkInspectInfo | undefined)[];
+}
 function stripIrrelevantFromRhs (rhs: Rhs) {
     for (const n of rhs.networks) {
         if (n) {
@@ -97,11 +87,16 @@ function stripIrrelevantFromRhs (rhs: Rhs) {
     }
 }
 
+function filterAppNetworks (network: NetworkInspectInfo, appName: string) {
+    if (!network?.Labels) return false;
+    return network.Labels["com.docker.stack.namespace"] === appName;
+}
+
 export async function handler (args: ArgumentsCamelCase) {
     const ctx = await initContext(args);
 
     const lhs: Lhs = {
-        networks: ctx.current.networks.sort(nameCompare),
+        networks: ctx.current.networks.filter((n) => filterAppNetworks(n, ctx.appName)).sort(nameCompare),
         services: ctx.current.services.map(s => s.Spec).sort(nameCompare),
     };
     const rhs: Rhs = {

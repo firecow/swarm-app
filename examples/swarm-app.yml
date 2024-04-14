@@ -5,9 +5,8 @@ networks:
     attachable: true
     external: false
   shared:
-    name: ${STACK_NAME}-shared
-    attachable: true
-    external: false
+    name: external
+    external: true
 
 services:
 
@@ -35,6 +34,7 @@ services:
       NGINX_FOLDER: /usr/share/nginx/html/
     networks:
       - default
+      - shared
     replicas: 2
     # TODO: Implement replicated and global, support changing between em.
     stop_signal: SIGQUIT

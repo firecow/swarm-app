@@ -15,8 +15,8 @@ export interface DockerResources {
 export async function getCurrent ({dockerode, appName}: {dockerode: Dockerode; appName: string}): Promise<DockerResources> {
     const resources = {
         configs: await dockerode.listConfigs({filters: {label: [`com.docker.stack.namespace=${appName}`]}}),
-        networks: await dockerode.listNetworks({filters: {label: [`com.docker.stack.namespace=${appName}`]}}),
         services: await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}}),
+        networks: await dockerode.listNetworks(),
     };
     resources.services.forEach(s => sortServiceSpec(s.Spec));
     return resources;
@@ -61,7 +61,7 @@ export async function createMissingNetworks ({dockerode, current, config, appNam
         console.log(`Creating network ${n.name}`);
         await dockerode.createNetwork({
             Name: n.name,
-            Attachable: n.attachable,
+            Attachable: n.attachable ?? true,
             Driver: "overlay",
             Labels: {"com.docker.stack.namespace": appName},
         });

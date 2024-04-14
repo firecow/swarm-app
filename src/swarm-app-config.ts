@@ -8,7 +8,7 @@ import traverse from "traverse";
 import {envsubst, parseEnvFile} from "./envsubst.js";
 
 export interface SwarmAppNetworkConfig {
-    attachable: boolean;
+    attachable?: boolean;
     external: boolean;
     name: string;
 }
@@ -137,8 +137,10 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
             values: {
                 properties: {
                     name: {type: "string"},
-                    attachable: {type: "boolean"},
                     external: {type: "boolean"},
+                },
+                optionalProperties: {
+                    attachable: {type: "boolean"},
                 },
             },
         },
