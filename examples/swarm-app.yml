@@ -49,6 +49,14 @@ services:
         - protocol: tcp
           published: 8080
           target: 80
+    # TODO: Implement healthcheck
+#    health_check:
+#      test: "string"
+#      interval: 5s
+#      timeout: 5s
+#      retries: 3
+#      start_period: 5s
+#      start_interval: 1s
     # TODO: Implement mounts
     mounts:
       /etc/nginx/:
