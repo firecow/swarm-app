@@ -6,12 +6,14 @@ import assert, {AssertionError} from "assert";
 export class HashedConfig {
 
     public readonly hash: string;
+    public readonly serviceName: string;
+    public readonly content: string;
+    public readonly targetPath: string;
 
-    public constructor (
-        public readonly targetPath: string,
-        public readonly content: string,
-        public readonly serviceName: string,
-    ) {
+    public constructor (targetPath: string, content: string, serviceName: string) {
+        this.targetPath = targetPath;
+        this.content = content;
+        this.serviceName = serviceName;
         this.hash = crypto.createHash("md5").update(content).digest("hex");
     }
 }

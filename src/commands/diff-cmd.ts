@@ -2,7 +2,7 @@ import {ArgumentsCamelCase, Argv} from "yargs";
 import {SwarmAppConfig} from "../swarm-app-config.js";
 import {DockerResources} from "../docker-api.js";
 import {NetworkInspectInfo, ServiceSpec} from "dockerode";
-import {diffStringsUnified} from "jest-diff";
+import {diffStringsRaw, diffStringsUnified} from "jest-diff";
 import yaml from "js-yaml";
 import {initServiceSpec} from "../service-spec.js";
 import {HashedConfigs} from "../hashed-config.js";
@@ -114,6 +114,12 @@ export async function handler (args: ArgumentsCamelCase) {
         await fs.writeFile("lhs.yml", lhsTxt);
         await fs.writeFile("rhs.yml", rhsTxt);
     }
+    const diffs = diffStringsRaw(lhsTxt, rhsTxt, true);
+    if (diffs.length === 1 && diffs[0]["0"] === 0) {
+        console.log("No changes detected");
+        return;
+    }
+
     const red = (str: string) => `\x1b[31m${str}\x1b[0m`;
     const green = (str: string) => `\x1b[32m${str}\x1b[0m`;
     const comparison = diffStringsUnified(lhsTxt, rhsTxt, {
