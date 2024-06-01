@@ -13,7 +13,7 @@ Deploy application stacks to docker swarm in a controlled manner.
 - `swarm-app diff` gives a proper diff like overview of what you are about to deploy.
 - `swarm-app wait` waits for deployment to reconcile, and outputs status.
 
-## Config file improvements 
+## Syntax Improvements 
 ### Extends from external sources.
 ```yml
 services:
