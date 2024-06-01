@@ -1,8 +1,6 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import {assertNumber, assertString} from "../asserts.js";
 import Docker from "dockerode";
-import timers from "timers/promises";
-import {clearTimeout} from "timers";
 
 export const command = "wait <app-name>";
 export const description = "Wait for deployment to settle";
@@ -20,33 +18,31 @@ export async function handler (args: ArgumentsCamelCase) {
     console.log("Waiting for deployment reconciliation");
     const services = await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
 
-    const timeoutKey = setTimeout(() => {
-        console.warn("Reconciliation timed out");
-        for (const t of tasks) {
-            if (t.DesiredState !== "running") continue;
-            if (t.Status.State === t.DesiredState) continue;
-            const service = services.find(s => t.ServiceID === s.ID);
-            console.warn(`Task ${t.Slot} for ${service?.Spec?.Name} is in invalid state '${t.Status.Message}'`);
-        }
-        process.exit(1);
-    }, timeoutInMs);
-
     let reconciled = false;
-    let tasks: {ServiceID: string; Slot: number; Status: {State: string; Message: string}; DesiredState: string}[];
+    let tasks: {ID: string; ServiceID: string; Slot: number; Status: {State: string; Message: string; Err: string | null}; DesiredState: string}[];
     do {
         tasks = await dockerode.listTasks({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
+        tasks = tasks.filter(t => t.DesiredState !== "shutdown");
         reconciled = tasks.every(t => {
+            if (t.Status.State === "rejected") return true;
             if (t.Status.State === "complete") return true;
             return t.Status.State === t.DesiredState;
         });
-        if (!reconciled) {
-            await timers.setTimeout(intervalInMs);
-        }
     } while (!reconciled);
 
-    clearTimeout(timeoutKey);
+    const rejectedTasks = tasks.filter(t => t.Status.State === "rejected");
 
-    console.log("Reconciliation succeeded");
+    if (rejectedTasks.length > 0) {
+        for (const t of rejectedTasks) {
+            const found = services.find(s => s.ID === t.ServiceID);
+            console.error(found?.Spec?.Name, t.Status.Err);
+        }
+        console.error("Reconciliation failed");
+    } else {
+        console.log("Reconciliation succeeded");
+    }
+
+
 }
 
 export function builder (yargs: Argv) {
@@ -58,7 +54,7 @@ export function builder (yargs: Argv) {
         type: "number",
         description: "Milliseconds to wait for successful reconciliation",
         demandOption: false,
-        default: 30000,
+        default: 90000, // 1m 30s
         alias: "t",
     });
     yargs.option("interval", {
