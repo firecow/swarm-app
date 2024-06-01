@@ -44,6 +44,14 @@ export interface SwarmAppServiceConfig {
     endpoint_spec?: {
         ports: SwarmAppEndpointSpecPort[];
     };
+    health_check?: {
+        test?: string[];
+        interval?: number;
+        timeout?: number;
+        retries?: number;
+        start_period?: number;
+        start_interval?: number;
+    };
     mounts?: Record<string, {
         source: string;
         type: "bind" | "volume";
@@ -117,6 +125,16 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                                     },
                                 },
                             },
+                        },
+                    },
+                    health_check: {
+                        optionalProperties: {
+                            test: {elements: {type: "string"}},
+                            interval: {type: "int32"},
+                            timeout: {type: "int32"},
+                            retries: {type: "int32"},
+                            start_period: {type: "int32"},
+                            start_interval: {type: "int32"},
                         },
                     },
                     mounts: {

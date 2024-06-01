@@ -49,18 +49,15 @@ services:
         - protocol: tcp
           published: 8080
           target: 80
-    # TODO: Implement healthcheck
-#    health_check:
-#      test: "string"
-#      interval: 5s
-#      timeout: 5s
-#      retries: 3
-#      start_period: 5s
-#      start_interval: 1s
-    # TODO: Implement mounts
+    health_check:
+      test: ["CMD", "true"]
+      interval: 5000000 # 5s
+      timeout: 5000000 # 5s
+      retries: 3
+      start_period: 5000000 # 5s
+      start_interval: 1000000 # 1s
     mounts:
       /etc/nginx/:
         source: "web-data"
-        type: "volume"
-        # type: "bind"
+        type: "volume" # "bind|volume"
         readonly: true
