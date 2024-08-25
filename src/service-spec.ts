@@ -62,10 +62,10 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
                 Isolation: "default",
                 HealthCheck: {
                     Test: serviceConfig.health_check?.test,
-                    Retries: serviceConfig.health_check?.retries,
-                    Timeout: serviceConfig.health_check?.timeout,
                     Interval: serviceConfig.health_check?.interval,
+                    Timeout: serviceConfig.health_check?.timeout,
                     StartPeriod: serviceConfig.health_check?.start_period,
+                    Retries: serviceConfig.health_check?.retries,
                     // TODO: Fix in dockerode StartInterval: serviceConfig.health_check?.start_interval,
                 },
             },

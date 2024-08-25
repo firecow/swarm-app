@@ -4,7 +4,7 @@ import {DockerResources} from "../docker-api.js";
 import {NetworkInspectInfo, ServiceSpec} from "dockerode";
 import {diffStringsRaw, diffStringsUnified} from "jest-diff";
 import yaml from "js-yaml";
-import {initServiceSpec} from "../service-spec.js";
+import {initServiceSpec, isContainerTaskSpec} from "../service-spec.js";
 import {HashedConfigs} from "../hashed-config.js";
 import {initContext} from "../context.js";
 import fs from "fs/promises";
@@ -73,6 +73,18 @@ function stripIrrelevantFromLhs (lhs: Lhs) {
         }
     }
 }
+function fixLhs (lhs: Lhs) {
+    // For some reason Healthcheck comes out of dockerode, but HealthCheck is used as service spec.
+    for (const s of lhs.services) {
+        if (!isContainerTaskSpec(s?.TaskTemplate)) continue;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        s.TaskTemplate.ContainerSpec.HealthCheck = s.TaskTemplate.ContainerSpec.Healthcheck;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        delete s.TaskTemplate.ContainerSpec.Healthcheck;
+    }
+}
 
 interface Rhs {
     services: ServiceSpec[];
@@ -107,6 +119,9 @@ export async function handler (args: ArgumentsCamelCase) {
     // Strip irrelevant info from lhs and rhs
     stripIrrelevantFromLhs(lhs);
     stripIrrelevantFromRhs(rhs);
+
+    // Fix lhs problems
+    fixLhs(lhs);
 
     const lhsTxt = yaml.dump(lhs);
     const rhsTxt = yaml.dump(rhs);
