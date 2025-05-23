@@ -1,6 +1,6 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import {SwarmAppConfig} from "../swarm-app-config.js";
-import {DockerResources} from "../docker-api.js";
+import {DockerResources, NetworkInspectInfoPlus} from "../docker-api.js";
 import {NetworkInspectInfo, ServiceSpec} from "dockerode";
 import {diffStringsRaw, diffStringsUnified} from "jest-diff";
 import yaml from "js-yaml";
@@ -17,8 +17,8 @@ interface InitNetworkResourcesOpt {
     appName: string;
     config: SwarmAppConfig;
 }
-function initNetworkResources ({config, appName}: InitNetworkResourcesOpt): NetworkInspectInfo[] {
-    const networkInfos: NetworkInspectInfo[] = [];
+function initNetworkResources ({config, appName}: InitNetworkResourcesOpt): NetworkInspectInfoPlus[] {
+    const networkInfos: NetworkInspectInfoPlus[] = [];
     for (const n of Object.values(config.networks ?? {}).filter(e => !e.external)) {
         networkInfos.push({
             Name: n.name,
@@ -26,6 +26,7 @@ function initNetworkResources ({config, appName}: InitNetworkResourcesOpt): Netw
             Created: "1970-01-01T06:00:00.00000000",
             Scope: "swarm",
             Driver: "overlay",
+            EnableIPv4: false,
             EnableIPv6: false,
             IPAM: {Driver: "default"},
             Internal: false,
@@ -56,12 +57,12 @@ function initServiceResources ({appName, config, hashedConfigs, current}: InitSe
     return serviceSpecs.sort(nameCompare);
 }
 
-interface Lhs {
+interface DiffEntry {
     services: (ServiceSpec | undefined)[];
-    networks: (NetworkInspectInfo | undefined)[];
+    networks: ((NetworkInspectInfo & {EnableIPv4: boolean}) | undefined)[];
 }
-function stripIrrelevantFromLhs (lhs: Lhs) {
-    for (const n of lhs.networks) {
+function deleteIrrelevantNetworkFields (entry: DiffEntry) {
+    for (const n of entry.networks) {
         delete n?.IPAM?.Options;
         delete n?.IPAM?.Config;
         delete n?.ConfigFrom;
@@ -73,9 +74,9 @@ function stripIrrelevantFromLhs (lhs: Lhs) {
         }
     }
 }
-function fixLhs (lhs: Lhs) {
+function fixLhsInconsistencies (entry: DiffEntry) {
     // For some reason Healthcheck comes out of dockerode, but HealthCheck is used as service spec.
-    for (const s of lhs.services) {
+    for (const s of entry.services) {
         if (!isContainerTaskSpec(s?.TaskTemplate)) continue;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -83,19 +84,6 @@ function fixLhs (lhs: Lhs) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         delete s.TaskTemplate.ContainerSpec.Healthcheck;
-    }
-}
-
-interface Rhs {
-    services: ServiceSpec[];
-    networks: (NetworkInspectInfo | undefined)[];
-}
-function stripIrrelevantFromRhs (rhs: Rhs) {
-    for (const n of rhs.networks) {
-        if (n) {
-            n.Id = "<masked>";
-            n.Created = "<masked>";
-        }
     }
 }
 
@@ -107,21 +95,19 @@ function filterAppNetworks (network: NetworkInspectInfo, appName: string) {
 export async function handler (args: ArgumentsCamelCase) {
     const ctx = await initContext(args);
 
-    const lhs: Lhs = {
+    const lhs: DiffEntry = {
         networks: ctx.current.networks.filter((n) => filterAppNetworks(n, ctx.appName)).sort(nameCompare),
         services: ctx.current.services.map(s => s.Spec).sort(nameCompare),
     };
-    const rhs: Rhs = {
+    const rhs: DiffEntry = {
         networks: initNetworkResources(ctx),
         services: initServiceResources(ctx),
     };
 
-    // Strip irrelevant info from lhs and rhs
-    stripIrrelevantFromLhs(lhs);
-    stripIrrelevantFromRhs(rhs);
+    deleteIrrelevantNetworkFields(lhs);
+    deleteIrrelevantNetworkFields(rhs);
 
-    // Fix lhs problems
-    fixLhs(lhs);
+    fixLhsInconsistencies(lhs);
 
     const lhsTxt = yaml.dump(lhs);
     const rhsTxt = yaml.dump(rhs);

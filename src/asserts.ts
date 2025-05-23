@@ -15,3 +15,7 @@ export function assertArray<T = unknown> (value: unknown, assertion?: (element: 
         value.forEach(assertion);
     }
 }
+
+export function assertObject (value: unknown): asserts value is object {
+    assert(typeof value === "object" && value !== null && !Array.isArray(value));
+}

@@ -36,7 +36,6 @@ services:
       - default
       - shared
     replicas: 2
-    # TODO: Implement replicated and global, support changing between em.
     stop_signal: SIGQUIT
     stop_grace_period: 10
     placement:

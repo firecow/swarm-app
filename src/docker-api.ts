@@ -6,17 +6,19 @@ import {SwarmAppConfig} from "./swarm-app-config.js";
 import timers from "timers/promises";
 import assert from "assert";
 
+export type NetworkInspectInfoPlus = NetworkInspectInfo & {EnableIPv4: boolean};
+
 export interface DockerResources {
     services: Service[];
     configs: ConfigInfo[];
-    networks: NetworkInspectInfo[];
+    networks: NetworkInspectInfoPlus[];
 }
 
 export async function getCurrent ({dockerode, appName}: {dockerode: Dockerode; appName: string}): Promise<DockerResources> {
     const resources = {
         configs: await dockerode.listConfigs({filters: {label: [`com.docker.stack.namespace=${appName}`]}}),
         services: await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}}),
-        networks: await dockerode.listNetworks(),
+        networks: await dockerode.listNetworks() as NetworkInspectInfoPlus[],
     };
     resources.services.forEach(s => sortServiceSpec(s.Spec));
     return resources;
@@ -52,7 +54,7 @@ interface CreateMissingNetworksOpts {
     config: SwarmAppConfig;
     appName: string;
 }
-export async function createMissingNetworks ({dockerode, current, config, appName}: CreateMissingNetworksOpts): Promise<NetworkInspectInfo[]> {
+export async function createMissingNetworks ({dockerode, current, config, appName}: CreateMissingNetworksOpts): Promise<NetworkInspectInfoPlus[]> {
     if (!config.networks) return [];
     const newNetworks = [];
     for (const n of Object.values(config.networks).filter(e => !e.external)) {
@@ -67,7 +69,7 @@ export async function createMissingNetworks ({dockerode, current, config, appNam
         });
 
         const listNetworks = await dockerode.listNetworks({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
-        foundNetwork = listNetworks.find((ln) => ln.Name === n.name);
+        foundNetwork = listNetworks.find((ln) => ln.Name === n.name) as NetworkInspectInfoPlus | undefined;
         assert(foundNetwork != null, `Network ${n.name} could not be found, it has just have been created!`);
         newNetworks.push(foundNetwork);
     }

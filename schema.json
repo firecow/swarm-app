@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Generated schema for swarm-app",
+  "properties": {
+    "services": {
+      "values": {
+        "optionalProperties": {
+          "extends": {
+            "elements": {
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "image": {
+            "type": "string"
+          },
+          "service_labels": {
+            "values": {
+              "type": "string"
+            }
+          },
+          "command": {
+            "elements": {
+              "type": "string"
+            }
+          },
+          "entrypoint": {
+            "elements": {
+              "type": "string"
+            }
+          },
+          "container_labels": {
+            "values": {
+              "type": "string"
+            }
+          },
+          "configs": {
+            "values": {
+              "optionalProperties": {
+                "sourceFile": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "environment": {
+            "values": {
+              "type": "string"
+            }
+          },
+          "env_file": {
+            "type": "string"
+          },
+          "networks": {
+            "elements": {
+              "type": "string"
+            }
+          },
+          "replicas": {
+            "type": "int32"
+          },
+          "stop_signal": {
+            "enum": [
+              "SIGTERM",
+              "SIGQUIT"
+            ]
+          },
+          "stop_grace_period": {
+            "type": "int32"
+          },
+          "placement": {
+            "optionalProperties": {
+              "max_replicas_per_node": {
+                "type": "int32"
+              },
+              "constraints": {
+                "elements": {
+                  "type": "string"
+                }
+              },
+              "preferences": {
+                "elements": {
+                  "properties": {
+                    "spread": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "endpoint_spec": {
+            "properties": {
+              "ports": {
+                "elements": {
+                  "properties": {
+                    "published": {
+                      "type": "int16"
+                    },
+                    "target": {
+                      "type": "int16"
+                    }
+                  },
+                  "optionalProperties": {
+                    "protocol": {
+                      "enum": [
+                        "tcp",
+                        "udp",
+                        "sctp"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "health_check": {
+            "optionalProperties": {
+              "test": {
+                "elements": {
+                  "type": "string"
+                }
+              },
+              "interval": {
+                "type": "int32"
+              },
+              "timeout": {
+                "type": "int32"
+              },
+              "retries": {
+                "type": "int32"
+              },
+              "start_period": {
+                "type": "int32"
+              },
+              "start_interval": {
+                "type": "int32"
+              }
+            }
+          },
+          "mounts": {
+            "values": {
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "volume",
+                    "bind"
+                  ]
+                },
+                "readonly": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "optionalProperties": {
+    "networks": {
+      "values": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "external": {
+            "type": "boolean"
+          }
+        },
+        "optionalProperties": {
+          "attachable": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

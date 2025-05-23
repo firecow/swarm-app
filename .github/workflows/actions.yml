@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
       - run: npm install --no-audit --no-fund --cache .npm
       - run: npx tsc
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
       - run: npm install --no-audit --no-fund --cache .npm
       - run: npx eslint .
@@ -38,8 +38,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
       - run: npx tsc
       - run: npm test
+
+  generate-schema-has-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npx tsc
+      - run: node src/index.js generate-schema > schema.json
+      - run: |
+         git diff --exit-code -- schema.json || (>&2 echo "schema.json is not up to date. Please run node src/index.js generate-schema > schema.json"; exit 1)
+

@@ -4,9 +4,10 @@ import {HashedConfigs} from "./hashed-config.js";
 import {DockerResources} from "./docker-api.js";
 import {ContainerTaskSpec, ServiceSpec} from "dockerode";
 import {sortObjectKeys} from "./object.js";
+import {assertObject} from "./asserts";
 
-// eslint-disable-next-line
-export function isContainerTaskSpec (object: any): object is ContainerTaskSpec {
+export function isContainerTaskSpec (object: unknown): object is ContainerTaskSpec {
+    assertObject(object);
     return "ContainerSpec" in object;
 }
 
@@ -25,9 +26,6 @@ export function sortServiceSpec (s: ServiceSpec | undefined) {
         if (!b.ConfigID) return 0;
         return a.ConfigID.localeCompare(b.ConfigID);
     });
-
-    // Networks
-    // Endpoint ports
 }
 
 interface InitServiceSpecOpts {
@@ -40,7 +38,7 @@ interface InitServiceSpecOpts {
 
 export function initServiceSpec ({appName, serviceName, config, hashedConfigs, current}: InitServiceSpecOpts): ServiceSpec & {version?: number} {
     const serviceConfig = config.services[serviceName];
-    const serviceSpec: ServiceSpec & {version?: number} = {
+    const serviceSpec: ServiceSpec & {version?: number; TaskTemplate: {ContainerSpec: {HealthCheck: {StartInterval: number | undefined}}}} = {
         version: 0,
         Name: `${appName}_${serviceName}`,
         Labels: serviceConfig.service_labels,
@@ -65,8 +63,8 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
                     Interval: serviceConfig.health_check?.interval,
                     Timeout: serviceConfig.health_check?.timeout,
                     StartPeriod: serviceConfig.health_check?.start_period,
+                    StartInterval: serviceConfig.health_check?.start_interval,
                     Retries: serviceConfig.health_check?.retries,
-                    // TODO: Fix in dockerode StartInterval: serviceConfig.health_check?.start_interval,
                 },
             },
             Placement: {

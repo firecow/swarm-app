@@ -182,8 +182,6 @@ export async function loadSwarmAppConfig (filenames: string[]) {
 }
 
 export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appName: string) {
-    // TODO: Download yml specified in service.extends and merge them.
-
     // Create default network block if it's missing.
     if (swarmAppConfig.networks?.default == null) {
         swarmAppConfig.networks = swarmAppConfig.networks ?? {};
