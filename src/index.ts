@@ -9,7 +9,7 @@ import * as generateSchemaCommand from "./commands/generate-schema.js";
 
 process.on("uncaughtException", (err) => {
     if (err instanceof assert.AssertionError) {
-        console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 6).join("\n")}\x1b[0m`);
+        console.error(err.message);
     } else {
         console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 4).join("\n")}\x1b[0m`);
     }

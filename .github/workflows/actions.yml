@@ -1,5 +1,5 @@
 ---
-name: Quality Assurance
+name: Actions
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund --cache .npm
       - run: npx tsc
       - run: npm test
 
@@ -52,8 +52,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
+      - run: npm install --no-audit --no-fund --cache .npm
       - run: npx tsc
       - run: node src/index.js generate-schema > schema.json
-      - run: |
-         git diff --exit-code -- schema.json || (>&2 echo "schema.json is not up to date. Please run node src/index.js generate-schema > schema.json"; exit 1)
-
+      - run: git diff --exit-code -- schema.json || (>&2 echo "schema.json is not up to date. Please run node src/index.js generate-schema > schema.json"; exit 1)
