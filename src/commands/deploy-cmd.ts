@@ -3,6 +3,33 @@ import {createMissingConfigs, createMissingNetworks, removeUnusedConfigs, remove
 import {initContext} from "../context.js";
 import timers from "timers/promises";
 
+export function yargsConfigFileOption (yargs: Argv) {
+    yargs.option("config-file", {
+        type: "array",
+        description: "Config file(s)",
+        demandOption: false,
+        default: ["swarm-app.yml"],
+        alias: "f",
+    });
+}
+
+export function yargsTemplateInputOption (yargs: Argv) {
+    yargs.option("templating-input-file", {
+        type: "string",
+        description: "Templating input file",
+        demandOption: false,
+        default: null,
+        alias: "i",
+    });
+}
+
+export function yargsAppNameFileOption (yargs: Argv) {
+    yargs.positional("app-name", {
+        type: "string",
+        description: "Application name",
+    });
+}
+
 export const command = "deploy <app-name>";
 export const description = "Deploys swarm app";
 
@@ -50,17 +77,9 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargs.positional("app-name", {
-        type: "string",
-        description: "Application name",
-    });
-    yargs.option("config-file", {
-        type: "array",
-        description: "Config file(s)",
-        demandOption: false,
-        default: ["swarm-app.yml"],
-        alias: "f",
-    });
+    yargsAppNameFileOption(yargs);
+    yargsConfigFileOption(yargs);
+    yargsTemplateInputOption(yargs);
     yargs.hide("help");
     yargs.hide("version");
     return yargs;

@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import {SwarmAppConfig} from "./swarm-app-config.js";
 import fs from "fs";
-import assert, {AssertionError} from "assert";
+import {AssertionError} from "assert";
+import {assertNotNullOrUndefined} from "./asserts";
 
 export class HashedConfig {
 
@@ -34,7 +35,7 @@ export class HashedConfigs {
 
     public find (serviceName: string, targetPath: string): HashedConfig {
         const found = this.list.find(l => l.serviceName === serviceName && l.targetPath === targetPath);
-        assert(found != null, `Could not find hashed config ${serviceName} ${targetPath}`);
+        assertNotNullOrUndefined(found, `Could not find hashed config ${serviceName} ${targetPath}`);
         return found;
     }
 

@@ -1,25 +1,23 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import {loadSwarmAppConfig} from "../swarm-app-config.js";
-import {assertArray, assertString} from "../asserts.js";
+import {assertArray, assertString, assertStringOrNull} from "../asserts.js";
+import {yargsConfigFileOption, yargsTemplateInputOption} from "./deploy-cmd";
 
 export const command = "validate";
 export const description = "Validates config file by json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
-    assertArray(configFiles, assertString);
-    await loadSwarmAppConfig(configFiles);
+    assertArray(configFiles, "all configFile must be a string", assertString);
+    const templatingInputFile = args["templating-input-file"];
+    assertStringOrNull(templatingInputFile, "templatingInputFile must be a string or null");
+    await loadSwarmAppConfig(configFiles, templatingInputFile);
     console.log("Configuration file is valid");
 }
 
 export function builder (yargs: Argv) {
-    yargs.option("config-file", {
-        type: "array",
-        description: "Config file(s)",
-        demandOption: false,
-        default: ["swarm-app.yml"],
-        alias: "f",
-    });
+    yargsConfigFileOption(yargs);
+    yargsTemplateInputOption(yargs);
     yargs.hide("help");
     yargs.hide("version");
     return yargs;

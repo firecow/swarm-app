@@ -3,9 +3,9 @@ Deploy application to docker swarm in a controlled manner.
 
 # Why?
 
-- Updating swarm config's used to be a pain, but not anymore.
-- docker-compose.yml wasn't designed for docker swarm, swarm-app.yml is.
-- `swarm-app.yml` is very explicit, no more optionals, no more short syntax.
+- Rolling update of swarm config, thanks to checksum naming.
+- Explicit syntax, no more optionals, no more short syntax.
+- Built-in jinja2 style templating via nunjucks
 
 # Usage
 - `swarm-app validate` will exit on basic configuration file mistakes.

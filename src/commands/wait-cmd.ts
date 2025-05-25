@@ -2,6 +2,7 @@ import {ArgumentsCamelCase, Argv} from "yargs";
 import Docker from "dockerode";
 import timers from "timers/promises";
 import {assertNumber, assertString} from "../asserts.js";
+import {yargsAppNameFileOption} from "./deploy-cmd";
 
 interface Task {
     DesiredState: string;
@@ -16,9 +17,9 @@ export const description = "Wait for deployment to settle";
 
 export async function handler (args: ArgumentsCamelCase) {
     const appName = args["appName"];
-    assertString(appName);
+    assertString(appName, "appName must be a string");
     const timeout = args["timeout"];
-    assertNumber(timeout);
+    assertNumber(timeout, "timeout must be a number in ms");
 
     const dockerode = new Docker();
 
@@ -70,10 +71,7 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargs.positional("app-name", {
-        type: "string",
-        description: "Application name",
-    });
+    yargsAppNameFileOption(yargs);
     yargs.positional("timeout", {
         type: "number",
         description: "Time is ms to wait for reconciliation",

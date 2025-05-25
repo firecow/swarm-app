@@ -13,6 +13,7 @@
     "jest-diff": "29.x",
     "js-yaml": "4.x",
     "just-extend": "6.x",
+    "nunjucks": "^3.2.4",
     "source-map-support": "0.5.x",
     "traverse": "0.6.x",
     "yargs": "17.x"
@@ -22,6 +23,7 @@
     "@types/dockerode": "3.x",
     "@types/js-yaml": "4.x",
     "@types/node": "22.x",
+    "@types/nunjucks": "^3.2.6",
     "@types/source-map-support": "0.5.x",
     "@types/traverse": "0.6.x",
     "@typescript-eslint/eslint-plugin": "7.x",

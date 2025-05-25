@@ -2,10 +2,12 @@ import yaml from "js-yaml";
 import fs from "fs";
 import {AssertionError} from "assert";
 import justExtend from "just-extend";
+import nunjucks from "nunjucks";
+import traverse from "traverse";
 import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
 import Ajv from "ajv/dist/jtd.js";
-import traverse from "traverse";
 import {envsubst, parseEnvFile} from "./envsubst.js";
+import {assertObjectOrNull} from "./asserts.js";
 
 export interface SwarmAppNetworkConfig {
     attachable?: boolean;
@@ -165,10 +167,14 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
     },
 };
 
-export async function loadSwarmAppConfig (filenames: string[]) {
+export async function loadSwarmAppConfig (configFilenames: string[], templatingInputFile: string | null) {
     let extendedSwarmAppConfig = {};
-    for (const filename of filenames) {
-        const swarmAppConfig = yaml.load(await fs.promises.readFile(filename, "utf8"));
+    for (const configFilename of configFilenames) {
+        const templatingInput = yaml.load(templatingInputFile ? await fs.promises.readFile(templatingInputFile, "utf8") : "---");
+        assertObjectOrNull(templatingInput, "templatingInput is not an object or null");
+        let configFileContent = await fs.promises.readFile(configFilename, "utf8");
+        configFileContent = nunjucks.renderString(configFileContent, templatingInput ?? {});
+        const swarmAppConfig = yaml.load(configFileContent);
         extendedSwarmAppConfig = justExtend(true, extendedSwarmAppConfig, swarmAppConfig);
     }
 
@@ -210,7 +216,6 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
         if (this.path[0] === "services" && service.environment) {
             serviceEnvironment = service.environment;
         }
-
         this.update(envsubst(v, {...process.env, ...serviceEnvironment}));
     });
 
