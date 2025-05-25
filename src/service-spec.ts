@@ -7,7 +7,7 @@ import {sortObjectKeys} from "./object.js";
 import {assertObject} from "./asserts";
 
 export function isContainerTaskSpec (object: unknown): object is ContainerTaskSpec {
-    assertObject(object);
+    assertObject(object, "object is not an object in isContainerTaskSpec");
     return "ContainerSpec" in object;
 }
 

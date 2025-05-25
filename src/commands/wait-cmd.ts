@@ -17,9 +17,9 @@ export const description = "Wait for deployment to settle";
 
 export async function handler (args: ArgumentsCamelCase) {
     const appName = args["appName"];
-    assertString(appName);
+    assertString(appName, "appName must be a string");
     const timeout = args["timeout"];
-    assertNumber(timeout);
+    assertNumber(timeout, "timeout must be a number in ms");
 
     const dockerode = new Docker();
 

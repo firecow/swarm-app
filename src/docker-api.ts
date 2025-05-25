@@ -42,7 +42,7 @@ export async function createMissingConfigs ({dockerode, hashedConfigs, appName, 
             Data: Buffer.from(h.content).toString("base64"),
         };
         const {id} = await dockerode.createConfig(spec);
-        assertString(id);
+        assertString(id, `id:${id} is not a string in createMissingConfigs`);
         newConfigs.push({ID: id, Spec: spec, CreatedAt: "", UpdatedAt: "", Version: {Index: 0}});
     }
     return newConfigs;

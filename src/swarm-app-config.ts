@@ -171,7 +171,7 @@ export async function loadSwarmAppConfig (configFilenames: string[], templatingI
     let extendedSwarmAppConfig = {};
     for (const configFilename of configFilenames) {
         const templatingInput = yaml.load(templatingInputFile ? await fs.promises.readFile(templatingInputFile, "utf8") : "---");
-        assertObjectOrNull(templatingInput);
+        assertObjectOrNull(templatingInput, "templatingInput is not an object or null");
         let configFileContent = await fs.promises.readFile(configFilename, "utf8");
         configFileContent = nunjucks.renderString(configFileContent, templatingInput ?? {});
         const swarmAppConfig = yaml.load(configFileContent);

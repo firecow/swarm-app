@@ -8,11 +8,11 @@ import {ArgumentsCamelCase} from "yargs";
 
 export async function initContext (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
-    assertArray(configFiles, assertString);
+    assertArray(configFiles, "all configFile must be a string", assertString);
     const appName = args["appName"];
-    assertString(appName);
+    assertString(appName, "appName must be a string");
     const templatingInputFile = args["templating-input-file"];
-    assertStringOrNull(templatingInputFile);
+    assertStringOrNull(templatingInputFile, "templatingInputFile must be a string or null");
 
     const config = await loadSwarmAppConfig(configFiles, templatingInputFile);
     await expandSwarmAppConfig(config, appName);

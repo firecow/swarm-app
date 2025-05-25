@@ -8,9 +8,9 @@ export const description = "Validates config file by json schema";
 
 export async function handler (args: ArgumentsCamelCase) {
     const configFiles = args["configFile"];
-    assertArray(configFiles, assertString);
+    assertArray(configFiles, "all configFile must be a string", assertString);
     const templatingInputFile = args["templating-input-file"];
-    assertStringOrNull(templatingInputFile);
+    assertStringOrNull(templatingInputFile, "templatingInputFile must be a string or null");
     await loadSwarmAppConfig(configFiles, templatingInputFile);
     console.log("Configuration file is valid");
 }
