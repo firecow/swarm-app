@@ -56,6 +56,16 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
         });
     }
 
+    let updateConfig;
+    if (serviceConfig.update_config) {
+        updateConfig = {
+            Parallelism: serviceConfig.update_config.parallelism,
+            FailureAction: "pause",
+            MaxFailureRatio: 0,
+            Order: serviceConfig.update_config.order,
+        };
+    }
+
     const serviceSpec: ServiceSpec & {version?: number; TaskTemplate: {ContainerSpec: {HealthCheck: {StartInterval: number | undefined}}}} = {
         version: 0,
         Name: `${appName}_${serviceName}`,
@@ -97,6 +107,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
             Runtime: "container",
         },
         Mode: {Replicated: {Replicas: serviceConfig.replicas ?? 1}},
+        UpdateConfig: updateConfig,
         EndpointSpec: {
             Mode: "vip",
             Ports: serviceConfig.endpoint_spec?.ports.map(p => {
