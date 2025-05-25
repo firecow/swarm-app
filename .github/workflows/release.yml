@@ -10,9 +10,6 @@ jobs:
   release-docker-image:
     name: Release docker image
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [ amd64, arm64 ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
