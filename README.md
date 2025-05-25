@@ -7,7 +7,7 @@ Deploy application to docker swarm in a controlled manner.
 - docker-compose.yml wasn't designed for docker swarm, swarm-app.yml is.
 - `swarm-app.yml` is very explicit, no more optionals, no more short syntax.
 
-# Improvements
+# Usage
 - `swarm-app validate` will exit on basic configuration file mistakes.
 - `swarm-app diff` gives a proper diff overview of what you are about to deploy.
 - `swarm-app deploy` deploys the application.
