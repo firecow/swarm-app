@@ -164,6 +164,19 @@
                 }
               }
             }
+          },
+          "update_config": {
+            "properties": {
+              "parallelism": {
+                "type": "int32"
+              },
+              "order": {
+                "enum": [
+                  "stop-first",
+                  "start-first"
+                ]
+              }
+            }
           }
         }
       }
