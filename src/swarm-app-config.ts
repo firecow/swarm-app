@@ -59,6 +59,10 @@ export interface SwarmAppServiceConfig {
         type: "bind" | "volume";
         readonly: boolean;
     }>;
+    update_config?: {
+        parallelism: number;
+        order: "stop-first" | "start-first";
+    };
 }
 
 export interface SwarmAppConfig {
@@ -146,6 +150,12 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                                 type: {enum: ["volume", "bind"]},
                                 readonly: {type: "boolean"},
                             },
+                        },
+                    },
+                    update_config: {
+                        properties: {
+                            parallelism: {type: "int32"},
+                            order: {enum: ["stop-first", "start-first"]},
                         },
                     },
                 },

@@ -14,6 +14,9 @@ services:
   # {% for entry in echo_servers %}
   echo-server-{{ entry }}:
     image: mendhak/http-https-echo:37
+    update_config:
+      order: "start-first"
+      parallelism: 0
   # {% endfor %}
   # {% endif %}
 
