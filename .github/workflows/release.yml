@@ -26,4 +26,4 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/firecow/swarm-app:latest
+          tags: ghcr.io/firecow/swarm-app:${{ github.ref_name }}
