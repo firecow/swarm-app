@@ -49,6 +49,10 @@ export class HashedConfigs {
     public exists (hash: string) {
         return this.list.find(c => c.hash === hash) != null;
     }
+
+    public length () {
+        return this.list.length;
+    }
 }
 
 export async function initHashedConfigs (config: SwarmAppConfig) {

@@ -1,4 +1,4 @@
-import {assertArray, assertString} from "./asserts.js";
+import {assertArray, assertString, assertStringOrNull} from "./asserts.js";
 import {expandSwarmAppConfig, loadSwarmAppConfig} from "./swarm-app-config.js";
 import Dockerode from "dockerode";
 import {getCurrent} from "./docker-api.js";
@@ -11,7 +11,10 @@ export async function initContext (args: ArgumentsCamelCase) {
     assertArray(configFiles, assertString);
     const appName = args["appName"];
     assertString(appName);
-    const config = await loadSwarmAppConfig(configFiles);
+    const templatingInputFile = args["templating-input-file"];
+    assertStringOrNull(templatingInputFile);
+
+    const config = await loadSwarmAppConfig(configFiles, templatingInputFile);
     await expandSwarmAppConfig(config, appName);
 
     const dockerode = new Dockerode();

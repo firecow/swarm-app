@@ -2,6 +2,7 @@ import {ArgumentsCamelCase, Argv} from "yargs";
 import Docker from "dockerode";
 import timers from "timers/promises";
 import {assertNumber, assertString} from "../asserts.js";
+import {yargsAppNameFileOption} from "./deploy-cmd";
 
 interface Task {
     DesiredState: string;
@@ -70,10 +71,7 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargs.positional("app-name", {
-        type: "string",
-        description: "Application name",
-    });
+    yargsAppNameFileOption(yargs);
     yargs.positional("timeout", {
         type: "number",
         description: "Time is ms to wait for reconciliation",

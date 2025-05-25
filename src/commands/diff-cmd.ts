@@ -9,6 +9,7 @@ import {HashedConfigs} from "../hashed-config.js";
 import {initContext} from "../context.js";
 import fs from "fs/promises";
 import {nameCompare} from "../array.js";
+import {yargsAppNameFileOption, yargsConfigFileOption, yargsTemplateInputOption} from "./deploy-cmd";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
@@ -133,17 +134,9 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargs.positional("app-name", {
-        type: "string",
-        description: "Application name",
-    });
-    yargs.option("config-file", {
-        type: "array",
-        description: "Config file(s)",
-        demandOption: false,
-        default: ["swarm-app.yml"],
-        alias: "f",
-    });
+    yargsAppNameFileOption(yargs);
+    yargsConfigFileOption(yargs);
+    yargsTemplateInputOption(yargs);
     yargs.option("write-lhs-rhs", {
         type: "boolean",
         description: "Write lhs and rhs files",

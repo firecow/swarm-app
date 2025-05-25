@@ -38,6 +38,24 @@ interface InitServiceSpecOpts {
 
 export function initServiceSpec ({appName, serviceName, config, hashedConfigs, current}: InitServiceSpecOpts): ServiceSpec & {version?: number} {
     const serviceConfig = config.services[serviceName];
+
+    let env;
+    if (serviceConfig.environment) {
+        env = Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`).sort((a, b) => a.localeCompare(b));
+    }
+
+    let configs;
+    const byServiceName = hashedConfigs.filterByServiceName(serviceName);
+    if (byServiceName.length > 0) {
+        configs = byServiceName.map(({targetPath, hash}) => {
+            return {
+                File: {Name: targetPath, UID: "0", GID: "0", Mode: 0},
+                ConfigID: current?.configs.find(c => c.Spec?.Name === hash)?.ID,
+                ConfigName: hash,
+            };
+        });
+    }
+
     const serviceSpec: ServiceSpec & {version?: number; TaskTemplate: {ContainerSpec: {HealthCheck: {StartInterval: number | undefined}}}} = {
         version: 0,
         Name: `${appName}_${serviceName}`,
@@ -47,16 +65,10 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
                 Image: serviceConfig.image,
                 Labels: serviceConfig.container_labels,
                 Command: serviceConfig.command,
-                Env: Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`).sort((a, b) => a.localeCompare(b)),
+                Env: env,
                 StopSignal: serviceConfig.stop_signal,
                 StopGracePeriod: serviceConfig.stop_grace_period,
-                Configs: hashedConfigs.filterByServiceName(serviceName).map(({targetPath, hash}) => {
-                    return {
-                        File: {Name: targetPath, UID: "0", GID: "0", Mode: 0},
-                        ConfigID: current?.configs.find(c => c.Spec?.Name === hash)?.ID,
-                        ConfigName: hash,
-                    };
-                }),
+                Configs: configs,
                 Isolation: "default",
                 HealthCheck: {
                     Test: serviceConfig.health_check?.test,
@@ -84,7 +96,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
             ForceUpdate: 0,
             Runtime: "container",
         },
-        Mode: {Replicated: {Replicas: serviceConfig.replicas}},
+        Mode: {Replicated: {Replicas: serviceConfig.replicas ?? 1}},
         EndpointSpec: {
             Mode: "vip",
             Ports: serviceConfig.endpoint_spec?.ports.map(p => {

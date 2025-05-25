@@ -10,6 +10,13 @@ networks:
 
 services:
 
+  # {% if echo_servers is defined %}
+  # {% for entry in echo_servers %}
+  echo-server-{{ entry }}:
+    image: mendhak/http-https-echo:37
+  # {% endfor %}
+  # {% endif %}
+
   nginx:
     command: ["nginx", "-g", "daemon off;"]
     image: nginx
