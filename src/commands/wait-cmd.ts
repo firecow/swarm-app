@@ -67,7 +67,6 @@ export async function handler (args: ArgumentsCamelCase) {
                 console.log(`${serviceName} is in ${state}${errMsg ? ", error: '" + errMsg + "'" : ""}`);
             }
         }
-        console.log(servicesUpdating);
     } while (!timedout && !bail);
 
     if (timedout) {
