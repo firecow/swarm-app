@@ -17,8 +17,9 @@ export interface SwarmAppNetworkConfig {
 
 export interface SwarmAppEndpointSpecPort {
     protocol?: "tcp" | "udp" | "sctp";
-    published: number;
-    target: number;
+    publish_mode?: "ingress" | "host";
+    published_port: number;
+    target_port: number;
 }
 
 export interface SwarmAppServiceConfig {
@@ -29,7 +30,7 @@ export interface SwarmAppServiceConfig {
     entrypoint?: string[];
     container_labels?: Record<string, string>;
     configs?: Record<string, {
-        sourceFile?: string;
+        source_file?: string;
         content?: string;
     }>;
     environment?: Record<string, string>;
@@ -67,13 +68,13 @@ export interface SwarmAppServiceConfig {
 
 export interface SwarmAppConfig {
     networks?: Record<string, SwarmAppNetworkConfig>;
-    services: Record<string, SwarmAppServiceConfig>;
+    service_specs: Record<string, SwarmAppServiceConfig>;
 }
 
 
 export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
     properties: {
-        services: {
+        service_specs: {
             values: {
                 optionalProperties: {
                     extends: {
@@ -92,7 +93,7 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                     configs: {
                         values: {
                             optionalProperties: {
-                                sourceFile: {type: "string"},
+                                source_file: {type: "string"},
                                 content: {type: "string"},
                             },
                         },
@@ -123,10 +124,11 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
                             ports: {
                                 elements: {
                                     properties: {
-                                        published: {type: "int16"},
-                                        target: {type: "int16"},
+                                        published_port: {type: "int16"},
+                                        target_port: {type: "int16"},
                                     },
                                     optionalProperties: {
+                                        publish_mode: {enum: ["ingress", "host"]},
                                         protocol: {enum: ["tcp", "udp", "sctp"]},
                                     },
                                 },
@@ -209,7 +211,7 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
     }
 
     // Expand envFile to environment
-    for (const s of Object.values(swarmAppConfig.services)) {
+    for (const s of Object.values(swarmAppConfig.service_specs)) {
         if (!s.env_file) continue;
         const envFileCnt = await fs.promises.readFile(s.env_file, "utf8");
         s.environment = {...s.environment, ...parseEnvFile(envFileCnt)};
@@ -217,7 +219,7 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
     }
 
     // Envsubst all string values
-    const services = swarmAppConfig.services;
+    const services = swarmAppConfig.service_specs;
     traverse(swarmAppConfig).forEach(function (v) {
         if (typeof v !== "string") return;
 
@@ -230,7 +232,7 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
     });
 
     // Ensure com.docker.stack.namespace labels
-    for (const service of Object.values(swarmAppConfig.services)) {
+    for (const service of Object.values(swarmAppConfig.service_specs)) {
         service.service_labels = service.service_labels ?? {};
         service.service_labels["com.docker.stack.namespace"] = appName;
         service.container_labels = service.container_labels ?? {};

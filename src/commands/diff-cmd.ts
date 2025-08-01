@@ -50,7 +50,7 @@ interface InitServiceResourcesOpt {
 }
 function initServiceResources ({appName, config, hashedConfigs, current}: InitServiceResourcesOpt): ServiceSpec[] {
     const serviceSpecs: ServiceSpec[] = [];
-    for (const serviceName of Object.keys(config.services)) {
+    for (const serviceName of Object.keys(config.service_specs)) {
         const serviceSpec = initServiceSpec({appName, serviceName, config, hashedConfigs, current});
         delete serviceSpec.version;
         serviceSpecs.push(serviceSpec);

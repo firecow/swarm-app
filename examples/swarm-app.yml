@@ -8,7 +8,7 @@ networks:
     name: external
     external: true
 
-services:
+service_specs:
 
   # {% if echo_servers is defined %}
   # {% for entry in echo_servers %}
@@ -27,7 +27,7 @@ services:
       org.company.country: england
     configs:
       /etc/nginx/nginx.conf:
-        sourceFile: 'nginx.conf'
+        source_file: 'nginx.conf'
       /etc/nginx/conf.d/default.conf:
         content: |
           server {
@@ -49,15 +49,17 @@ services:
     stop_signal: SIGQUIT
     stop_grace_period: 10
     placement:
-      preferences: [{ spread: node.hostname }]
+      preferences:
+        - { spread: node.hostname }
       max_replicas_per_node: 2
       constraints:
         - node.labels.purpose == generic
     endpoint_spec:
       ports:
         - protocol: tcp
-          published: 8080
-          target: 80
+          published_port: 8080
+          target_port: 80
+          publish_mode: host
     health_check:
       test: ["CMD", "true"]
       interval: 5000000 # 5s
