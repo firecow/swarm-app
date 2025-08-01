@@ -59,7 +59,7 @@ service_specs:
         - protocol: tcp
           published_port: 8080
           target_port: 80
-          publish_mode: host
+          publish_mode: ingress
     health_check:
       test: ["CMD", "true"]
       interval: 5000000 # 5s

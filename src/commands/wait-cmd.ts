@@ -32,6 +32,11 @@ export async function handler (args: ArgumentsCamelCase) {
     let services: Service[], tasks: Task[], timedout, bail, serviceStateMap;
     const start = Date.now();
     do {
+        // To prevent high cpu usage
+        await timers.setTimeout(5000);
+        // Calculate timedout
+        timedout = Date.now() - timeout > start;
+
         serviceStateMap = new Map<string, string>();
         services = await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
         tasks = await dockerode.listTasks({filters: {"label": [`com.docker.stack.namespace=${appName}`], "desired-state": ["running"]}}) as Task[];
@@ -48,21 +53,21 @@ export async function handler (args: ArgumentsCamelCase) {
             }
         }
 
-        const servicesUpdating = [...serviceStateMap].filter(([v]) => !["completed", "rollback_completed"].includes(v));
+        const servicesUpdating = [];
+        for (const [id, state] of serviceStateMap) {
+            if (!["completed", "rollback_completed"].includes(state)) servicesUpdating.push([id, state]);
+        }
+
         bail = servicesUpdating.length === 0;
         if (!bail) {
-            servicesUpdating.forEach(([serviceId, state]) => {
+            for (const [serviceId, state] of servicesUpdating) {
                 const serviceName = services.find(s => s.ID === serviceId)?.Spec?.Name;
                 assert(serviceName != null, "serviceName must be a string");
                 const errMsg = tasks.find(t => t.ServiceID === serviceId && t.Status.Err)?.Status.Err;
                 console.log(`${serviceName} is in ${state}${errMsg ? ", error: '" + errMsg + "'" : ""}`);
-            });
+            }
         }
-
-        // To prevent high cpu usage
-        await timers.setTimeout(5000);
-        // Calculate timedout
-        timedout = Date.now() - timeout > start;
+        console.log(servicesUpdating);
     } while (!timedout && !bail);
 
     if (timedout) {
