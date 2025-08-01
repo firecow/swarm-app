@@ -1,10 +1,14 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
-import Docker from "dockerode";
+import Docker, {Service} from "dockerode";
 import timers from "timers/promises";
 import {assertNumber, assertString} from "../asserts.js";
 import {yargsAppNameFileOption} from "./deploy-cmd";
+import assert from "assert";
 
 interface Task {
+    ID: string;
+    ServiceID: string;
+    Slot: number;
     DesiredState: string;
     Status: {
         State: string;
@@ -23,50 +27,49 @@ export async function handler (args: ArgumentsCamelCase) {
 
     const dockerode = new Docker();
 
-    console.log(`Awaiting task reconciliation for a max of ${timeout}ms`);
+    console.log(`Awaiting task reconciliation for ${timeout}ms`);
 
-    let services;
-    let timedout = false;
-    let reconciled;
-    let latestTaskError = "";
+    let services: Service[], tasks: Task[], timedout, bail, serviceStateMap;
     const start = Date.now();
     do {
-        latestTaskError = "";
-        reconciled = true;
+        serviceStateMap = new Map<string, string>();
         services = await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
+        tasks = await dockerode.listTasks({filters: {"label": [`com.docker.stack.namespace=${appName}`], "desired-state": ["running"]}}) as Task[];
 
-        // Check the tasks for failures.
         for (const s of services) {
-            const tasks = await dockerode.listTasks({
-                Filter: `service=${s.Spec?.Name}`,
-            }) as Task[];
-            for (const t of tasks) {
-                if (t.DesiredState === "ready" && t.Status.State != "running") {
-                    reconciled = false;
-                }
-                if (t.Status.State === "rejected" && latestTaskError == "") {
-                    latestTaskError = t.Status.Err;
+            if (s.UpdateStatus?.State) {
+                serviceStateMap.set(s.ID, s.UpdateStatus.State);
+            } else {
+                const runningTasks = tasks.filter(t => t.Status.State === "running" && t.ServiceID === s.ID);
+                const totalTasks = tasks.filter(t => t.ServiceID === s.ID);
+                if (totalTasks.length > runningTasks.length) {
+                    serviceStateMap.set(s.ID ?? "unspecified", "replicating");
                 }
             }
         }
 
+        const servicesUpdating = [...serviceStateMap].filter(([v]) => !["completed", "rollback_completed"].includes(v));
+        bail = servicesUpdating.length === 0;
+        if (!bail) {
+            servicesUpdating.forEach(([serviceId, state]) => {
+                const serviceName = services.find(s => s.ID === serviceId)?.Spec?.Name;
+                assert(serviceName != null, "serviceName must be a string");
+                const errMsg = tasks.find(t => t.ServiceID === serviceId && t.Status.Err)?.Status.Err;
+                console.log(`${serviceName} is in ${state}${errMsg ? ", error: '" + errMsg + "'" : ""}`);
+            });
+        }
+
         // To prevent high cpu usage
         await timers.setTimeout(5000);
+        // Calculate timedout
         timedout = Date.now() - timeout > start;
-        if (!reconciled && latestTaskError != "") {
-            console.error(latestTaskError);
-        }
-    } while (!timedout && !reconciled);
+    } while (!timedout && !bail);
 
-    if (!reconciled || timedout) {
-        if (timedout) {
-            console.error("Reconciliation timed out");
-        } else {
-            console.error("Reconciliation failed");
-        }
-
+    if (timedout) {
+        console.error("Reconciliation timed out");
         process.exit(1);
     }
+
     console.log("Reconciliation succeeded");
 }
 

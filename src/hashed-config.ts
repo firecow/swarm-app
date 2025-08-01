@@ -1,8 +1,7 @@
 import crypto from "crypto";
 import {SwarmAppConfig} from "./swarm-app-config.js";
 import fs from "fs";
-import {AssertionError} from "assert";
-import {assertNotNullOrUndefined} from "./asserts";
+import assert, {AssertionError} from "assert";
 
 export class HashedConfig {
 
@@ -35,7 +34,7 @@ export class HashedConfigs {
 
     public find (serviceName: string, targetPath: string): HashedConfig {
         const found = this.list.find(l => l.serviceName === serviceName && l.targetPath === targetPath);
-        assertNotNullOrUndefined(found, `Could not find hashed config ${serviceName} ${targetPath}`);
+        assert(found != null, `Could not find hashed config ${serviceName} ${targetPath}`);
         return found;
     }
 
@@ -54,14 +53,14 @@ export class HashedConfigs {
 
 export async function initHashedConfigs (config: SwarmAppConfig) {
     const hashedConfigs = new HashedConfigs();
-    for (const [serviceName, s] of Object.entries(config.services)) {
+    for (const [serviceName, s] of Object.entries(config.service_specs)) {
         if (!s.configs) continue;
         for (const [targetPath, c] of Object.entries(s.configs)) {
             let content;
             if (c.content) {
                 content = c.content;
-            } else if (c.sourceFile) {
-                content = await fs.promises.readFile(c.sourceFile, "utf-8");
+            } else if (c.source_file) {
+                content = await fs.promises.readFile(c.source_file, "utf-8");
             } else {
                 throw new AssertionError({message: `config ${targetPath} missing content or file field`});
             }

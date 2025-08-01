@@ -1,9 +1,5 @@
 import assert from "assert";
 
-export function assertNotNullOrUndefined<T> (value: T | null | undefined, msg: string): asserts value is T {
-    assert(value == null, msg);
-}
-
 export function assertString (value: unknown, msg: string): asserts value is string {
     assert(typeof value === "string", msg);
 }

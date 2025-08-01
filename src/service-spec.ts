@@ -37,7 +37,7 @@ interface InitServiceSpecOpts {
 }
 
 export function initServiceSpec ({appName, serviceName, config, hashedConfigs, current}: InitServiceSpecOpts): ServiceSpec & {version?: number} {
-    const serviceConfig = config.services[serviceName];
+    const serviceConfig = config.service_specs[serviceName];
 
     let env;
     if (serviceConfig.environment) {
@@ -111,7 +111,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
         EndpointSpec: {
             Mode: "vip",
             Ports: serviceConfig.endpoint_spec?.ports.map(p => {
-                return {Protocol: p.protocol, TargetPort: p.target, PublishedPort: p.published, PublishMode: "ingress"};
+                return {Protocol: p.protocol, TargetPort: p.target_port, PublishedPort: p.published_port, PublishMode: p.publish_mode};
             }),
         },
     };

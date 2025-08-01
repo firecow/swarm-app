@@ -1,5 +1,5 @@
 ---
-services:
+service_specs:
 
   nginx:
     image: nginx:alpine

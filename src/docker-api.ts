@@ -70,7 +70,7 @@ export async function createMissingNetworks ({dockerode, current, config, appNam
 
         const listNetworks = await dockerode.listNetworks({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
         foundNetwork = listNetworks.find((ln) => ln.Name === n.name) as NetworkInspectInfoPlus | undefined;
-        assert(foundNetwork != null, `Network ${n.name} could not be found, it has just have been created!`);
+        assert(foundNetwork != null, `Network ${n.name} could not be found, it should have just have been created!`);
         newNetworks.push(foundNetwork);
     }
     return newNetworks;
@@ -101,7 +101,7 @@ export async function removeUnusedServices ({dockerode, current, config, appName
     for (const s of current.services) {
         if (!s.Spec?.Name) continue;
         const serviceShortName = s.Spec.Name.replace(new RegExp(`^${appName}_`), "");
-        if (config.services[serviceShortName]) continue;
+        if (config.service_specs[serviceShortName]) continue;
         console.log(`Removing service ${s.Spec.Name}`);
         await dockerode.getService(s.ID).remove();
     }
@@ -115,7 +115,7 @@ interface UpsertServicesOpts {
     hashedConfigs: HashedConfigs;
 }
 export async function upsertServices ({dockerode, config, current, appName, hashedConfigs}: UpsertServicesOpts) {
-    for (const serviceName of Object.keys(config.services)) {
+    for (const serviceName of Object.keys(config.service_specs)) {
         const serviceSpec = initServiceSpec({appName, serviceName, config, hashedConfigs, current});
         const foundService = current.services.find((s) => s.Spec?.Name === `${appName}_${serviceName}`);
         if (!foundService) {

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Generated schema for swarm-app",
   "properties": {
-    "services": {
+    "service_specs": {
       "values": {
         "optionalProperties": {
           "extends": {
@@ -43,7 +43,7 @@
           "configs": {
             "values": {
               "optionalProperties": {
-                "sourceFile": {
+                "source_file": {
                   "type": "string"
                 },
                 "content": {
@@ -103,14 +103,20 @@
               "ports": {
                 "elements": {
                   "properties": {
-                    "published": {
+                    "published_port": {
                       "type": "int16"
                     },
-                    "target": {
+                    "target_port": {
                       "type": "int16"
                     }
                   },
                   "optionalProperties": {
+                    "publish_mode": {
+                      "enum": [
+                        "ingress",
+                        "host"
+                      ]
+                    },
                     "protocol": {
                       "enum": [
                         "tcp",
