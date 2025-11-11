@@ -32,30 +32,13 @@
     "@typescript-eslint/parser": "8.x",
     "eslint": "9.x",
     "jest": "30.x",
+    "jiti": "^2.6.1",
     "ts-jest": "29.x",
     "typescript": "5.x",
     "typescript-eslint": "^8.46.4"
   },
   "engines": {
-    "node": ">=18"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testMatch": [
-      "**/*.test.ts"
-    ],
-    "coverageReporters": [
-      "text-summary",
-      "json-summary",
-      "lcov"
-    ],
-    "collectCoverageFrom": [
-      "**/*.js",
-      "!src/index.js",
-      "!tests/**.*.js",
-      "!**/node_modules/**",
-      "!**/coverage/**"
-    ]
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
