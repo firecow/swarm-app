@@ -1,7 +1,7 @@
 import {ArgumentsCamelCase, Argv} from "yargs";
 import {SwarmAppConfig} from "../swarm-app-config.js";
 import {DockerResources, NetworkInspectInfoPlus} from "../docker-api.js";
-import {NetworkInspectInfo, ServiceSpec} from "dockerode";
+import {HealthConfig, NetworkInspectInfo, ServiceSpec} from "dockerode";
 import {diffStringsRaw, diffStringsUnified} from "jest-diff";
 import yaml from "js-yaml";
 import {initServiceSpec, isContainerTaskSpec} from "../service-spec.js";
@@ -9,7 +9,8 @@ import {HashedConfigs} from "../hashed-config.js";
 import {initContext} from "../context.js";
 import fs from "fs/promises";
 import {nameCompare} from "../array.js";
-import {yargsAppNameFileOption, yargsConfigFileOption, yargsTemplateInputOption} from "./deploy-cmd";
+import yargsExtra from "../yargs-extra.js";
+import assert from "assert";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
@@ -20,14 +21,14 @@ interface InitNetworkResourcesOpt {
 }
 function initNetworkResources ({config, appName}: InitNetworkResourcesOpt): NetworkInspectInfoPlus[] {
     const networkInfos: NetworkInspectInfoPlus[] = [];
-    for (const n of Object.values(config.networks ?? {}).filter(e => !e.external)) {
+    for (const n of Object.values(config.networks ?? {}).filter((e) => !e.external)) {
         networkInfos.push({
             Name: n.name,
             Id: "",
             Created: "1970-01-01T06:00:00.00000000",
             Scope: "swarm",
             Driver: "overlay",
-            EnableIPv4: false,
+            EnableIPv4: true,
             EnableIPv6: false,
             IPAM: {Driver: "default"},
             Internal: false,
@@ -60,7 +61,7 @@ function initServiceResources ({appName, config, hashedConfigs, current}: InitSe
 
 interface DiffEntry {
     services: (ServiceSpec | undefined)[];
-    networks: ((NetworkInspectInfo & {EnableIPv4: boolean}) | undefined)[];
+    networks: (NetworkInspectInfo & {EnableIPv4: boolean} | undefined)[];
 }
 function deleteIrrelevantNetworkFields (entry: DiffEntry) {
     for (const n of entry.networks) {
@@ -78,12 +79,13 @@ function deleteIrrelevantNetworkFields (entry: DiffEntry) {
 function fixLhsInconsistencies (entry: DiffEntry) {
     // For some reason Healthcheck comes out of dockerode, but HealthCheck is used as service spec.
     for (const s of entry.services) {
+        assert(s != null, "s cannot be null");
+        assert(s.TaskTemplate != null, "s.TaskTemplate cannot be null");
         if (!isContainerTaskSpec(s?.TaskTemplate)) continue;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        s.TaskTemplate.ContainerSpec.HealthCheck = s.TaskTemplate.ContainerSpec.Healthcheck;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        assert(s.TaskTemplate.ContainerSpec != null, "s.TaskTemplate.ContainerSpec cannot be null");
+        // @ts-expect-error Healthcheck shouldn't exist on ContainerSpec, it should be HealthCheck
+        s.TaskTemplate.ContainerSpec.HealthCheck = s.TaskTemplate.ContainerSpec.Healthcheck as HealthConfig | undefined;
+        // @ts-expect-error Healthcheck shouldn't exist on ContainerSpec, it should be HealthCheck
         delete s.TaskTemplate.ContainerSpec.Healthcheck;
     }
 }
@@ -98,7 +100,7 @@ export async function handler (args: ArgumentsCamelCase) {
 
     const lhs: DiffEntry = {
         networks: ctx.current.networks.filter((n) => filterAppNetworks(n, ctx.appName)).sort(nameCompare),
-        services: ctx.current.services.map(s => s.Spec).sort(nameCompare),
+        services: ctx.current.services.map((s) => s.Spec).sort(nameCompare),
     };
     const rhs: DiffEntry = {
         networks: initNetworkResources(ctx),
@@ -134,9 +136,9 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargsAppNameFileOption(yargs);
-    yargsConfigFileOption(yargs);
-    yargsTemplateInputOption(yargs);
+    yargsExtra.appNameFileOption(yargs);
+    yargsExtra.configFileOption(yargs);
+    yargsExtra.templateInputOption(yargs);
     yargs.option("write-lhs-rhs", {
         type: "boolean",
         description: "Write lhs and rhs files",

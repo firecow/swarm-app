@@ -193,7 +193,7 @@ export async function loadSwarmAppConfig (configFilenames: string[], templatingI
     // Validate json schema
     const validate = new Ajv().compile(swarmAppConfigSchema);
     if (!validate(extendedSwarmAppConfig)) {
-        throw new AssertionError({message: `${JSON.stringify(validate.errors)}`});
+        throw new AssertionError({message: JSON.stringify(validate.errors)});
     }
 
     return extendedSwarmAppConfig;

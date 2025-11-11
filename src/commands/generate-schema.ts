@@ -1,5 +1,5 @@
 import {Argv} from "yargs";
-import {swarmAppConfigSchema} from "../swarm-app-config";
+import {swarmAppConfigSchema} from "../swarm-app-config.js";
 
 export const command = "generate-schema";
 export const description = "Generates v7 json schema for swarm-app config files";

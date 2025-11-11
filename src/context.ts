@@ -7,9 +7,9 @@ import {ArgumentsCamelCase} from "yargs";
 
 
 export async function initContext (args: ArgumentsCamelCase) {
-    const configFiles = args["configFile"];
+    const configFiles = args.configFile;
     assertArray(configFiles, "all configFile must be a string", assertString);
-    const appName = args["appName"];
+    const appName = args.appName;
     assertString(appName, "appName must be a string");
     const templatingInputFile = args["templating-input-file"];
     assertStringOrNull(templatingInputFile, "templatingInputFile must be a string or null");

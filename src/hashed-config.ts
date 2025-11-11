@@ -6,8 +6,11 @@ import assert, {AssertionError} from "assert";
 export class HashedConfig {
 
     public readonly hash: string;
+
     public readonly serviceName: string;
+
     public readonly content: string;
+
     public readonly targetPath: string;
 
     public constructor (targetPath: string, content: string, serviceName: string) {
@@ -16,6 +19,7 @@ export class HashedConfig {
         this.serviceName = serviceName;
         this.hash = crypto.createHash("md5").update(content).digest("hex");
     }
+
 }
 
 export class HashedConfigs {
@@ -28,12 +32,12 @@ export class HashedConfigs {
 
     public filterByServiceName (serviceName: string): {targetPath: string; hash: string}[] {
         const service: {targetPath: string; hash: string}[] = [];
-        this.list.filter(l => l.serviceName === serviceName).forEach(({targetPath, hash}) => service.push({targetPath, hash}));
+        this.list.filter((l) => l.serviceName === serviceName).forEach(({targetPath, hash}) => service.push({targetPath, hash}));
         return service;
     }
 
     public find (serviceName: string, targetPath: string): HashedConfig {
-        const found = this.list.find(l => l.serviceName === serviceName && l.targetPath === targetPath);
+        const found = this.list.find((l) => l.serviceName === serviceName && l.targetPath === targetPath);
         assert(found != null, `Could not find hashed config ${serviceName} ${targetPath}`);
         return found;
     }
@@ -47,8 +51,9 @@ export class HashedConfigs {
     }
 
     public exists (hash: string) {
-        return this.list.find(c => c.hash === hash) != null;
+        return this.list.find((c) => c.hash === hash) != null;
     }
+
 }
 
 export async function initHashedConfigs (config: SwarmAppConfig) {

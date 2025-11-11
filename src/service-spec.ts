@@ -4,7 +4,7 @@ import {HashedConfigs} from "./hashed-config.js";
 import {DockerResources} from "./docker-api.js";
 import {ContainerTaskSpec, ServiceSpec} from "dockerode";
 import {sortObjectKeys} from "./object.js";
-import {assertObject} from "./asserts";
+import {assertObject} from "./asserts.js";
 
 export function isContainerTaskSpec (object: unknown): object is ContainerTaskSpec {
     assertObject(object, "object is not an object in isContainerTaskSpec");
@@ -20,7 +20,9 @@ export function sortServiceSpec (s: ServiceSpec | undefined) {
     if (s?.TaskTemplate.ContainerSpec?.Labels) {
         s.TaskTemplate.ContainerSpec.Labels = sortObjectKeys(s.TaskTemplate.ContainerSpec.Labels);
     }
-    s?.TaskTemplate.ContainerSpec?.Env?.sort((a, b) => a.localeCompare(b));
+    s?.TaskTemplate.ContainerSpec?.Env?.sort((a, b) => {
+        return a.localeCompare(b);
+    });
     s?.TaskTemplate.ContainerSpec?.Configs?.sort((a, b) => {
         if (!a.ConfigID) return 0;
         if (!b.ConfigID) return 0;
@@ -41,7 +43,8 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
 
     let env;
     if (serviceConfig.environment) {
-        env = Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`).sort((a, b) => a.localeCompare(b));
+        env = Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`).
+            sort((a, b) => a.localeCompare(b));
     }
 
     let configs;
@@ -50,7 +53,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
         configs = byServiceName.map(({targetPath, hash}) => {
             return {
                 File: {Name: targetPath, UID: "0", GID: "0", Mode: 0},
-                ConfigID: current?.configs.find(c => c.Spec?.Name === hash)?.ID,
+                ConfigID: current?.configs.find((c) => c.Spec?.Name === hash)?.ID,
                 ConfigName: hash,
             };
         });
@@ -91,7 +94,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
             },
             Placement: {
                 Constraints: serviceConfig.placement?.constraints,
-                Preferences: serviceConfig.placement?.preferences?.map(p => {
+                Preferences: serviceConfig.placement?.preferences?.map((p) => {
                     return {Spread: {SpreadDescriptor: p.spread}};
                 }),
                 MaxReplicas: serviceConfig.placement?.max_replicas_per_node,
@@ -100,7 +103,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
                 assert(config.networks != null, "config.networks cannot be empty here");
                 assert(config.networks[networkKey].name != null, `config.networks[${networkKey}].name cannot be empty here`);
                 const networkName = config.networks[networkKey].name;
-                const foundNetwork = current?.networks.find(n => n.Name === networkName);
+                const foundNetwork = current?.networks.find((n) => n.Name === networkName);
                 return {Target: foundNetwork?.Id};
             }),
             ForceUpdate: 0,
@@ -110,7 +113,7 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
         UpdateConfig: updateConfig,
         EndpointSpec: {
             Mode: "vip",
-            Ports: serviceConfig.endpoint_spec?.ports.map(p => {
+            Ports: serviceConfig.endpoint_spec?.ports.map((p) => {
                 return {Protocol: p.protocol, TargetPort: p.target_port, PublishedPort: p.published_port, PublishMode: p.publish_mode};
             }),
         },
