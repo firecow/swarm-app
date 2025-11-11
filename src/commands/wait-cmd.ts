@@ -2,8 +2,8 @@ import {ArgumentsCamelCase, Argv} from "yargs";
 import Docker, {Service} from "dockerode";
 import timers from "timers/promises";
 import {assertNumber, assertString} from "../asserts.js";
-import {yargsAppNameFileOption} from "./deploy-cmd";
 import assert from "assert";
+import yargsExtra from "../yargs-extra.js";
 
 interface Task {
     ID: string;
@@ -20,9 +20,9 @@ export const command = "wait <app-name>";
 export const description = "Wait for deployment to settle";
 
 export async function handler (args: ArgumentsCamelCase) {
-    const appName = args["appName"];
+    const appName = args.appName;
     assertString(appName, "appName must be a string");
-    const timeout = args["timeout"];
+    const timeout = args.timeout;
     assertNumber(timeout, "timeout must be a number in ms");
 
     const dockerode = new Docker();
@@ -45,8 +45,8 @@ export async function handler (args: ArgumentsCamelCase) {
             if (s.UpdateStatus?.State) {
                 serviceStateMap.set(s.ID, s.UpdateStatus.State);
             } else {
-                const runningTasks = tasks.filter(t => t.Status.State === "running" && t.ServiceID === s.ID);
-                const totalTasks = tasks.filter(t => t.ServiceID === s.ID);
+                const runningTasks = tasks.filter((t) => t.Status.State === "running" && t.ServiceID === s.ID);
+                const totalTasks = tasks.filter((t) => t.ServiceID === s.ID);
                 if (totalTasks.length > runningTasks.length) {
                     serviceStateMap.set(s.ID ?? "unspecified", "replicating");
                 }
@@ -61,9 +61,9 @@ export async function handler (args: ArgumentsCamelCase) {
         bail = servicesUpdating.length === 0;
         if (!bail) {
             for (const [serviceId, state] of servicesUpdating) {
-                const serviceName = services.find(s => s.ID === serviceId)?.Spec?.Name;
+                const serviceName = services.find((s) => s.ID === serviceId)?.Spec?.Name;
                 assert(serviceName != null, "serviceName must be a string");
-                const errMsg = tasks.find(t => t.ServiceID === serviceId && t.Status.Err)?.Status.Err;
+                const errMsg = tasks.find((t) => t.ServiceID === serviceId && t.Status.Err)?.Status.Err;
                 console.log(`${serviceName} is in ${state}${errMsg ? ", error: '" + errMsg + "'" : ""}`);
             }
         }
@@ -78,7 +78,7 @@ export async function handler (args: ArgumentsCamelCase) {
 }
 
 export function builder (yargs: Argv) {
-    yargsAppNameFileOption(yargs);
+    yargsExtra.appNameFileOption(yargs);
     yargs.positional("timeout", {
         type: "number",
         description: "Time is ms to wait for reconciliation",

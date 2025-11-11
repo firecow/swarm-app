@@ -2,6 +2,7 @@
   "name": "swarm-app",
   "main": "src/index.js",
   "bin": "src/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "fix": "eslint . --fix && tsc",
@@ -20,84 +21,23 @@
   },
   "devDependencies": {
     "@jest/globals": "30.x",
+    "@stylistic/eslint-plugin": "^5.5.0",
     "@types/dockerode": "3.x",
     "@types/js-yaml": "4.x",
-    "@types/node": "22.x",
+    "@types/node": "24.x",
     "@types/nunjucks": "^3.2.6",
     "@types/source-map-support": "0.5.x",
     "@types/traverse": "0.6.x",
-    "@typescript-eslint/eslint-plugin": "7.x",
-    "@typescript-eslint/parser": "7.x",
-    "eslint": "8.x",
+    "@typescript-eslint/eslint-plugin": "8.x",
+    "@typescript-eslint/parser": "8.x",
+    "eslint": "9.x",
     "jest": "30.x",
     "ts-jest": "29.x",
-    "typescript": "5.x"
+    "typescript": "5.x",
+    "typescript-eslint": "^8.46.4"
   },
   "engines": {
     "node": ">=18"
-  },
-  "eslintConfig": {
-    "env": {
-      "es2022": true,
-      "node": true
-    },
-    "ignorePatterns": [
-      "*.js"
-    ],
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended"
-    ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": [
-        "./tsconfig.json"
-      ]
-    },
-    "rules": {
-      "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/quotes": "error",
-      "@typescript-eslint/object-curly-spacing": "error",
-      "@typescript-eslint/space-before-function-paren": "error",
-      "@typescript-eslint/member-delimiter-style": "error",
-      "@typescript-eslint/semi": "error",
-      "@typescript-eslint/prefer-optional-chain": "error",
-      "@typescript-eslint/no-extra-parens": "error",
-      "@typescript-eslint/explicit-member-accessibility": "error",
-      "@typescript-eslint/comma-dangle": [
-        "error",
-        "always-multiline"
-      ],
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/require-await": "error",
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/indent": [
-        "error",
-        4
-      ],
-      "@typescript-eslint/no-unsafe-call": "error",
-      "@typescript-eslint/no-unsafe-member-access": "error",
-      "@typescript-eslint/no-unsafe-argument": "error",
-      "@typescript-eslint/space-before-blocks": "error",
-      "@typescript-eslint/type-annotation-spacing": "error",
-      "@typescript-eslint/func-call-spacing": "error",
-      "@typescript-eslint/comma-spacing": "error",
-      "@typescript-eslint/space-infix-ops": "error",
-      "@typescript-eslint/no-misused-promises": [
-        "error",
-        {
-          "checksVoidReturn": false
-        }
-      ],
-      "@typescript-eslint/promise-function-async": "error",
-      "keyword-spacing": "error",
-      "space-in-parens": "error",
-      "no-trailing-spaces": "error",
-      "no-multi-spaces": "error",
-      "arrow-spacing": "error",
-      "key-spacing": "error",
-      "eol-last": "error"
-    }
   },
   "jest": {
     "preset": "ts-jest",

@@ -17,9 +17,10 @@ export function assertArray<T = unknown> (value: unknown, msg: string, assertion
     assert(Array.isArray(value), msg);
 
     if (assertion) {
-        value.forEach((v) => {
-            return assertion(v, msg);
-        });
+        const assertElement: (element: unknown, msg: string) => asserts element is T = assertion;
+        for (const v of value) {
+            assertElement(v, msg);
+        }
     }
 }
 

@@ -20,7 +20,9 @@ export async function getCurrent ({dockerode, appName}: {dockerode: Dockerode; a
         services: await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}}),
         networks: await dockerode.listNetworks() as NetworkInspectInfoPlus[],
     };
-    resources.services.forEach(s => sortServiceSpec(s.Spec));
+    for (const s of resources.services) {
+        sortServiceSpec(s.Spec);
+    }
     return resources;
 }
 
@@ -33,7 +35,7 @@ interface CreateMissingConfigsOpts {
 export async function createMissingConfigs ({dockerode, hashedConfigs, appName, current}: CreateMissingConfigsOpts): Promise<ConfigInfo[]> {
     const newConfigs: ConfigInfo[] = [];
     for (const h of hashedConfigs.unique()) {
-        const found = current.configs.find(c => c.Spec?.Name === h.hash);
+        const found = current.configs.find((c) => c.Spec?.Name === h.hash);
         if (found) continue;
         console.log(`Creating config with hash ${h.hash}`);
         const spec = {
@@ -41,7 +43,7 @@ export async function createMissingConfigs ({dockerode, hashedConfigs, appName, 
             Labels: {"com.docker.stack.namespace": appName},
             Data: Buffer.from(h.content).toString("base64"),
         };
-        const {id} = await dockerode.createConfig(spec);
+        const {id} = await dockerode.createConfig(spec) as {id: number}; // TODO: Add fix to @types/dockerode
         assertString(id, `id:${id} is not a string in createMissingConfigs`);
         newConfigs.push({ID: id, Spec: spec, CreatedAt: "", UpdatedAt: "", Version: {Index: 0}});
     }
@@ -57,8 +59,8 @@ interface CreateMissingNetworksOpts {
 export async function createMissingNetworks ({dockerode, current, config, appName}: CreateMissingNetworksOpts): Promise<NetworkInspectInfoPlus[]> {
     if (!config.networks) return [];
     const newNetworks = [];
-    for (const n of Object.values(config.networks).filter(e => !e.external)) {
-        let foundNetwork = current.networks.find(c => c.Name === `${n.name}`);
+    for (const n of Object.values(config.networks).filter((e) => !e.external)) {
+        let foundNetwork = current.networks.find((c) => c.Name === n.name);
         if (foundNetwork) continue;
         console.log(`Creating network ${n.name}`);
         await dockerode.createNetwork({
