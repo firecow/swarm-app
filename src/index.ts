@@ -20,7 +20,7 @@ process.on("uncaughtException", (err) => {
 const terminalWidth = yargs().terminalWidth();
 void yargs(process.argv.slice(2)).
     parserConfiguration({"greedy-arrays": false}).
-    usage("Find more information at https://github.com/firecow/swarm-app").
+    usage("Find more information at https://github.com/cego/swarm-app").
     env("SWARMAPP").
     command(validateCommand).
     command(diffCommand).

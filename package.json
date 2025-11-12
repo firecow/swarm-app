@@ -42,14 +42,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/firecow/swarm-app.git"
+    "url": "https://github.com/cego/swarm-app.git"
   },
   "author": "Mads Jon Nielsen <madsjon@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/firecow/swarm-app/issues"
+    "url": "https://github.com/cego/swarm-app/issues"
   },
-  "homepage": "https://github.com/firecow/swarm-app#readme",
+  "homepage": "https://github.com/cego/swarm-app#readme",
   "keywords": [
     "docker",
     "stack",
