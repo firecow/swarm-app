@@ -31,7 +31,7 @@ export async function handler (args: ArgumentsCamelCase) {
         services = await dockerode.listServices({filters: {label: [`com.docker.stack.namespace=${appName}`]}});
         updateStatusesDone = services.every((s) => {
             if (!s.UpdateStatus?.State) return true;
-            return ["completed", "rollback_completed", "paused", "rollback_paused"].includes(s.UpdateStatus?.State ?? "");
+            return ["completed", "rollback_completed", "paused", "rollback_paused"].includes(s.UpdateStatus.State ?? "");
         });
 
         // To prevent high cpu usage
@@ -54,6 +54,7 @@ export function builder (yargs: Argv) {
     yargsExtra.appNameFileOption(yargs);
     yargsExtra.configFileOption(yargs);
     yargsExtra.templateInputOption(yargs);
+    yargsExtra.injectHostEnvOption(yargs);
     yargs.hide("help");
     yargs.hide("version");
     return yargs;

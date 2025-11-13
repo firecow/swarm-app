@@ -36,10 +36,9 @@ export default defineConfig(
             "@stylistic/object-property-newline": ["error", {allowAllPropertiesOnSameLine: true}],
             "@stylistic/multiline-ternary": ["error", "always-multiline"],
             "@stylistic/newline-per-chained-call": ["error", {ignoreChainWithDepth: 3}],
-            "@typescript-eslint/restrict-template-expressions": ["error", {allow: ["Error"]}],
+            "@typescript-eslint/restrict-template-expressions": ["error", {allow: ["Error"], allowNumber: true}],
 
             "@stylistic/function-call-argument-newline": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off", // TODO: We want this one enabled.
         },
     },
 );

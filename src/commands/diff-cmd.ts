@@ -4,13 +4,13 @@ import {DockerResources, NetworkInspectInfoPlus} from "../docker-api.js";
 import {HealthConfig, NetworkInspectInfo, ServiceSpec} from "dockerode";
 import {diffStringsRaw, diffStringsUnified} from "jest-diff";
 import yaml from "js-yaml";
-import {initServiceSpec, isContainerTaskSpec} from "../service-spec.js";
+import {initServiceSpec} from "../service-spec.js";
 import {HashedConfigs} from "../hashed-config.js";
 import {initContext} from "../context.js";
 import fs from "fs/promises";
 import {nameCompare} from "../array.js";
 import yargsExtra from "../yargs-extra.js";
-import assert from "assert";
+import {assertTaskTemplateContainerTaskSpec} from "../asserts.js";
 
 export const command = "diff <app-name>";
 export const description = "Show diff between current and config";
@@ -21,7 +21,9 @@ interface InitNetworkResourcesOpt {
 }
 function initNetworkResources ({config, appName}: InitNetworkResourcesOpt): NetworkInspectInfoPlus[] {
     const networkInfos: NetworkInspectInfoPlus[] = [];
-    for (const n of Object.values(config.networks ?? {}).filter((e) => !e.external)) {
+    const internalNetworks = Object.values(config.networks ?? {}).filter((n) => !n.external);
+
+    for (const n of internalNetworks) {
         networkInfos.push({
             Name: n.name,
             Id: "",
@@ -75,14 +77,21 @@ function deleteIrrelevantNetworkFields (entry: DiffEntry) {
             n.Created = "<masked>";
         }
     }
+
+    for (const s of entry.services) {
+        assertTaskTemplateContainerTaskSpec(s);
+
+        // Delete config id, we don't care about it
+        for (const c of s.TaskTemplate.ContainerSpec.Configs ?? []) {
+            delete c.ConfigID;
+        }
+    }
 }
 function fixLhsInconsistencies (entry: DiffEntry) {
     // For some reason Healthcheck comes out of dockerode, but HealthCheck is used as service spec.
     for (const s of entry.services) {
-        assert(s != null, "s cannot be null");
-        assert(s.TaskTemplate != null, "s.TaskTemplate cannot be null");
-        if (!isContainerTaskSpec(s?.TaskTemplate)) continue;
-        assert(s.TaskTemplate.ContainerSpec != null, "s.TaskTemplate.ContainerSpec cannot be null");
+        assertTaskTemplateContainerTaskSpec(s);
+
         // @ts-expect-error Healthcheck shouldn't exist on ContainerSpec, it should be HealthCheck
         s.TaskTemplate.ContainerSpec.HealthCheck = s.TaskTemplate.ContainerSpec.Healthcheck as HealthConfig | undefined;
         // @ts-expect-error Healthcheck shouldn't exist on ContainerSpec, it should be HealthCheck
@@ -91,7 +100,7 @@ function fixLhsInconsistencies (entry: DiffEntry) {
 }
 
 function filterAppNetworks (network: NetworkInspectInfo, appName: string) {
-    if (!network?.Labels) return false;
+    if (!network.Labels) return false;
     return network.Labels["com.docker.stack.namespace"] === appName;
 }
 
@@ -119,7 +128,7 @@ export async function handler (args: ArgumentsCamelCase) {
         await fs.writeFile("rhs.yml", rhsTxt);
     }
     const diffs = diffStringsRaw(lhsTxt, rhsTxt, true);
-    if (diffs.length === 1 && diffs[0]["0"] === 0) {
+    if (diffs.length === 1 && diffs[0]?.["0"] === 0) {
         console.log("No changes detected");
         return;
     }
@@ -139,6 +148,7 @@ export function builder (yargs: Argv) {
     yargsExtra.appNameFileOption(yargs);
     yargsExtra.configFileOption(yargs);
     yargsExtra.templateInputOption(yargs);
+    yargsExtra.injectHostEnvOption(yargs);
     yargs.option("write-lhs-rhs", {
         type: "boolean",
         description: "Write lhs and rhs files",

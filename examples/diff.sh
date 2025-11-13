@@ -4,6 +4,7 @@ set -e
 
 export STACK_NAME="test"
 export NGINX_FOLDER="/usr/share/nginx/html"
-export NGINX_LOCATION="/public"
+export NGINX_LOCATION="/public-with-diff"
+export NGINX_IMAGE_REF=nginx:alpine
 
-node ../src/index.js diff --write-lhs-rhs -f swarm-app.yml -f swarm-app.diff.yml -i swarm-app.input.yml "$STACK_NAME"
+node ../src/index.js diff "$STACK_NAME" -f swarm-app.yml -i swarm-app.input.yml --write-lhs-rhs

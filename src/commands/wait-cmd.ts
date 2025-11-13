@@ -24,6 +24,8 @@ export async function handler (args: ArgumentsCamelCase) {
     assertString(appName, "appName must be a string");
     const timeout = args.timeout;
     assertNumber(timeout, "timeout must be a number in ms");
+    const interval = args.interval;
+    assertNumber(interval, "interval must be a number in ms");
 
     const dockerode = new Docker();
 
@@ -33,7 +35,7 @@ export async function handler (args: ArgumentsCamelCase) {
     const start = Date.now();
     do {
         // To prevent high cpu usage
-        await timers.setTimeout(5000);
+        await timers.setTimeout(interval);
         // Calculate timedout
         timedout = Date.now() - timeout > start;
 
@@ -48,7 +50,7 @@ export async function handler (args: ArgumentsCamelCase) {
                 const runningTasks = tasks.filter((t) => t.Status.State === "running" && t.ServiceID === s.ID);
                 const totalTasks = tasks.filter((t) => t.ServiceID === s.ID);
                 if (totalTasks.length > runningTasks.length) {
-                    serviceStateMap.set(s.ID ?? "unspecified", "replicating");
+                    serviceStateMap.set(s.ID, "replicating");
                 }
             }
         }
@@ -64,7 +66,7 @@ export async function handler (args: ArgumentsCamelCase) {
                 const serviceName = services.find((s) => s.ID === serviceId)?.Spec?.Name;
                 assert(serviceName != null, "serviceName must be a string");
                 const errMsg = tasks.find((t) => t.ServiceID === serviceId && t.Status.Err)?.Status.Err;
-                console.log(`${serviceName} is in ${state}${errMsg ? ", error: '" + errMsg + "'" : ""}`);
+                console.log(`${serviceName} is in ${state} state${errMsg ? ", error: '" + errMsg + "'" : ""}`);
             }
         }
     } while (!timedout && !bail);
@@ -83,6 +85,11 @@ export function builder (yargs: Argv) {
         type: "number",
         description: "Time is ms to wait for reconciliation",
         default: 120000,
+    });
+    yargs.positional("interval", {
+        type: "number",
+        description: "How often reconciliation should run",
+        default: 5000,
     });
     yargs.hide("help");
     yargs.hide("version");

@@ -18,11 +18,19 @@ const yargsExtra = {
     },
     configFileOption (yargs: Argv) {
         yargs.option("config-file", {
-            type: "array",
-            description: "Config file(s)",
+            type: "string",
+            description: "Config file",
             demandOption: false,
-            default: ["swarm-app.yml"],
+            default: "swarm-app.yml",
             alias: "f",
+        });
+    },
+    injectHostEnvOption (yargs: Argv) {
+        yargs.option("inject-host-env", {
+            type: "boolean",
+            description: "Allow host env to be injected",
+            demandOption: false,
+            default: true,
         });
     },
 };

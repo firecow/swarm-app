@@ -7,6 +7,7 @@ docker network inspect external &>/dev/null || docker network create external --
 export STACK_NAME="test"
 export NGINX_FOLDER="/usr/share/nginx/html"
 export NGINX_LOCATION="/public"
+export NGINX_IMAGE_REF=nginx
 
 node ../src/index.js deploy "$STACK_NAME" -f swarm-app.yml -i swarm-app.input.yml
 

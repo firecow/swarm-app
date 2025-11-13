@@ -103,7 +103,8 @@ export async function removeUnusedServices ({dockerode, current, config, appName
     for (const s of current.services) {
         if (!s.Spec?.Name) continue;
         const serviceShortName = s.Spec.Name.replace(new RegExp(`^${appName}_`), "");
-        if (config.service_specs[serviceShortName]) continue;
+        const serviceSpec = config.service_specs[serviceShortName];
+        if (serviceSpec !== undefined) continue;
         console.log(`Removing service ${s.Spec.Name}`);
         await dockerode.getService(s.ID).remove();
     }
