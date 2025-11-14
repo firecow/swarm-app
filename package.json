@@ -13,10 +13,8 @@
     "dockerode": "4.x",
     "jest-diff": "30.x",
     "js-yaml": "4.x",
-    "just-extend": "6.x",
     "nunjucks": "^3.2.4",
     "source-map-support": "0.5.x",
-    "traverse": "0.6.x",
     "yargs": "18.x"
   },
   "devDependencies": {

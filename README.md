@@ -6,7 +6,7 @@ Deploy application to docker swarm in a controlled manner.
 - Rolling update of swarm config, thanks to checksum naming
 - Explicit syntax, no more optionals, no more short syntax
 - [Built-in jinja2 style templating via nunjucks](./examples/swarm-app.yml?plain=1#L13)
-- [Inline swarm configs with envsubst](./examples/swarm-app.yml?plain=1#L34)
+- [Inline swarm configs](./examples/swarm-app.yml?plain=1#L32)
 
 # Usage
 - `swarm-app validate` will exit on basic configuration file mistakes.

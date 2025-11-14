@@ -1,12 +1,9 @@
 import yaml from "js-yaml";
 import fs from "fs";
 import {AssertionError} from "assert";
-import justExtend from "just-extend";
 import nunjucks from "nunjucks";
-import traverse from "traverse";
 import {JTDSchemaType} from "ajv/dist/types/jtd-schema.js";
 import Ajv from "ajv/dist/jtd.js";
-import {envsubst, parseEnvFile} from "./envsubst.js";
 import {assertObjectOrNull} from "./asserts.js";
 
 export interface SwarmAppNetworkConfig {
@@ -179,24 +176,51 @@ export const swarmAppConfigSchema: JTDSchemaType<SwarmAppConfig> = {
     },
 };
 
-export async function loadSwarmAppConfig (configFilenames: string[], templatingInputFile: string | null) {
-    let extendedSwarmAppConfig = {};
-    for (const configFilename of configFilenames) {
-        const templatingInput = yaml.load(templatingInputFile ? await fs.promises.readFile(templatingInputFile, "utf8") : "---");
-        assertObjectOrNull(templatingInput, "templatingInput is not an object or null");
-        let configFileContent = await fs.promises.readFile(configFilename, "utf8");
-        configFileContent = nunjucks.renderString(configFileContent, templatingInput ?? {});
-        const swarmAppConfig = yaml.load(configFileContent);
-        extendedSwarmAppConfig = justExtend(true, extendedSwarmAppConfig, swarmAppConfig);
-    }
+export async function loadSwarmAppConfig (configFile: string, throwOnUndefined: boolean, injectHostEnv: boolean | null = true, templatingInputFile: string | null) {
+    const nunjucksEnv = new nunjucks.Environment(null, {throwOnUndefined});
+    const nunjucksEnvInput = injectHostEnv ? {env: process.env} : {};
+    const templatingInput = yaml.load(templatingInputFile ? await fs.promises.readFile(templatingInputFile, "utf8") : "---");
+    assertObjectOrNull(templatingInput, "templatingInput is not an object or null");
+    let configFileContent = await fs.promises.readFile(configFile, "utf8");
+    configFileContent = nunjucksEnv.renderString(configFileContent, templatingInput ? {...nunjucksEnvInput, ...templatingInput} : nunjucksEnvInput);
+    const swarmAppConfig = yaml.load(configFileContent);
 
     // Validate json schema
     const validate = new Ajv().compile(swarmAppConfigSchema);
-    if (!validate(extendedSwarmAppConfig)) {
+    if (!validate(swarmAppConfig)) {
         throw new AssertionError({message: JSON.stringify(validate.errors)});
     }
 
-    return extendedSwarmAppConfig;
+    return swarmAppConfig;
+}
+
+export function parseEnvFile (src: string): Record<string, string> {
+    const regExp = /^\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?$/mg;
+    const obj: Record<string, string> = {};
+    const lines = src.replace(/\r\n?/mg, "\n");
+
+    let match;
+    while ((match = regExp.exec(lines)) != null) {
+        const key = match[1];
+        if (!key) continue;
+
+        let value = match[2] ?? "";
+
+        value = value.trim();
+
+        const maybeQuote = value[0];
+
+        value = value.replace(/^(['"`])([\s\S]*)\1$/mg, "$2");
+
+        if (maybeQuote === "\"") {
+            value = value.replace(/\\n/g, "\n");
+            value = value.replace(/\\r/g, "\r");
+        }
+
+        obj[key] = value;
+    }
+
+    return obj;
 }
 
 export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appName: string) {
@@ -218,24 +242,11 @@ export async function expandSwarmAppConfig (swarmAppConfig: SwarmAppConfig, appN
         delete s.env_file;
     }
 
-    // Envsubst all string values
-    const services = swarmAppConfig.service_specs;
-    traverse(swarmAppConfig).forEach(function (v) {
-        if (typeof v !== "string") return;
-
-        const service = services[this.path[1]];
-        let serviceEnvironment = {};
-        if (this.path[0] === "services" && service.environment) {
-            serviceEnvironment = service.environment;
-        }
-        this.update(envsubst(v, {...process.env, ...serviceEnvironment}));
-    });
-
     // Ensure com.docker.stack.namespace labels
-    for (const service of Object.values(swarmAppConfig.service_specs)) {
-        service.service_labels = service.service_labels ?? {};
-        service.service_labels["com.docker.stack.namespace"] = appName;
-        service.container_labels = service.container_labels ?? {};
-        service.container_labels["com.docker.stack.namespace"] = appName;
+    for (const s of Object.values(swarmAppConfig.service_specs)) {
+        s.service_labels = s.service_labels ?? {};
+        s.service_labels["com.docker.stack.namespace"] = appName;
+        s.container_labels = s.container_labels ?? {};
+        s.container_labels["com.docker.stack.namespace"] = appName;
     }
 }

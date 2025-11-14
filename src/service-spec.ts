@@ -2,31 +2,26 @@ import assert from "assert";
 import {SwarmAppConfig} from "./swarm-app-config.js";
 import {HashedConfigs} from "./hashed-config.js";
 import {DockerResources} from "./docker-api.js";
-import {ContainerTaskSpec, ServiceSpec} from "dockerode";
+import {ServiceSpec} from "dockerode";
 import {sortObjectKeys} from "./object.js";
-import {assertObject} from "./asserts.js";
-
-export function isContainerTaskSpec (object: unknown): object is ContainerTaskSpec {
-    assertObject(object, "object is not an object in isContainerTaskSpec");
-    return "ContainerSpec" in object;
-}
+import {assertTaskTemplateContainerTaskSpec} from "./asserts.js";
 
 export function sortServiceSpec (s: ServiceSpec | undefined) {
-    if (!isContainerTaskSpec(s?.TaskTemplate)) return;
+    assertTaskTemplateContainerTaskSpec(s);
 
-    if (s?.Labels) {
+    if (s.Labels) {
         s.Labels = sortObjectKeys(s.Labels);
     }
-    if (s?.TaskTemplate.ContainerSpec?.Labels) {
+    if (s.TaskTemplate.ContainerSpec.Labels) {
         s.TaskTemplate.ContainerSpec.Labels = sortObjectKeys(s.TaskTemplate.ContainerSpec.Labels);
     }
-    s?.TaskTemplate.ContainerSpec?.Env?.sort((a, b) => {
+    s.TaskTemplate.ContainerSpec.Env?.sort((a, b) => {
         return a.localeCompare(b);
     });
-    s?.TaskTemplate.ContainerSpec?.Configs?.sort((a, b) => {
-        if (!a.ConfigID) return 0;
-        if (!b.ConfigID) return 0;
-        return a.ConfigID.localeCompare(b.ConfigID);
+    s.TaskTemplate.ContainerSpec.Configs?.sort((a, b) => {
+        if (!a.File?.Name) return 0;
+        if (!b.File?.Name) return 0;
+        return a.File.Name.localeCompare(b.File.Name);
     });
 }
 
@@ -39,12 +34,12 @@ interface InitServiceSpecOpts {
 }
 
 export function initServiceSpec ({appName, serviceName, config, hashedConfigs, current}: InitServiceSpecOpts): ServiceSpec & {version?: number} {
+    assert(config.service_specs[serviceName], "config.service_specs[serviceName] must be non-null");
     const serviceConfig = config.service_specs[serviceName];
 
     let env;
     if (serviceConfig.environment) {
-        env = Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`).
-            sort((a, b) => a.localeCompare(b));
+        env = Object.entries(serviceConfig.environment ?? {}).map(([k, v]) => `${k}=${v}`).sort((a, b) => a.localeCompare(b));
     }
 
     let configs;
@@ -101,9 +96,9 @@ export function initServiceSpec ({appName, serviceName, config, hashedConfigs, c
             },
             Networks: serviceConfig.networks?.map((networkKey) => {
                 assert(config.networks != null, "config.networks cannot be empty here");
-                assert(config.networks[networkKey].name != null, `config.networks[${networkKey}].name cannot be empty here`);
-                const networkName = config.networks[networkKey].name;
-                const foundNetwork = current?.networks.find((n) => n.Name === networkName);
+                const network = config.networks[networkKey];
+                assert(network != null, `config.networks[${networkKey}] cannot be empty here`);
+                const foundNetwork = current?.networks.find((n) => n.Name === network.name);
                 return {Target: foundNetwork?.Id};
             }),
             ForceUpdate: 0,

@@ -11,8 +11,7 @@ process.on("uncaughtException", (err) => {
     if (err instanceof assert.AssertionError) {
         console.error(err.message);
     } else {
-        console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 4).
-            join("\n")}\x1b[0m`);
+        console.error(`\x1b[31m${err.stack?.split("\n").slice(0, 4).join("\n") ?? String(err)}\x1b[0m`);
     }
     process.exit(1);
 });
@@ -30,8 +29,9 @@ void yargs(process.argv.slice(2)).
     demandCommand().
     fail((msg, err) => {
         if (err instanceof AssertionError) throw new assert.AssertionError({message: msg});
-        console.error(msg);
+        if (msg) console.error(msg);
         console.error(err);
+        process.exit(1);
     }).
     wrap(terminalWidth).
     strict(true).
